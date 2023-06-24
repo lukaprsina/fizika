@@ -1,11 +1,11 @@
-import type { Component } from "solid-js";
+import type { VoidComponent } from "solid-js";
 import { For, Show } from "solid-js";
 import { useRouteData } from "solid-start";
 import { createServerData$ } from "solid-start/server";
 import Footer from "~/components/Footer";
 import Header from "~/components/Header";
-import { Sidebar, SidebarItem } from "~/components/Sidebar";
-import { AppShellContent, AppShellFooter, AppShellHeader } from "~/layouts/Providers";
+import { Navigation, NavigationItem } from "~/components/Navigation";
+import Providers, { AppShellContent, AppShellFooter, AppShellHeader } from "~/layouts/Providers";
 
 export function routeData() {
     return createServerData$(async () => {
@@ -23,29 +23,31 @@ export function routeData() {
     })
 }
 
-const Home: Component = () => {
+const Home: VoidComponent = () => {
     const topics = useRouteData<typeof routeData>();
 
-    return <>
-        <AppShellHeader>
-            <Header />
-        </AppShellHeader>
-        <AppShellContent>
-            <Show when={topics()}>
-                <Sidebar>
-                    <For each={topics()}>{(topic) =>
-                        <SidebarItem
-                            text={topic.title}
-                        />
-                    }
-                    </For>
-                </Sidebar>
-            </Show>
-        </AppShellContent>
-        <AppShellFooter>
-            <Footer />
-        </AppShellFooter>
-    </>
+    return (
+        <Providers>
+            <AppShellHeader>
+                <Header />
+            </AppShellHeader>
+            <AppShellContent>
+                <Show when={topics()}>
+                    <Navigation>
+                        <For each={topics()}>{(topic) =>
+                            <NavigationItem
+                                text={topic.title}
+                            />
+                        }
+                        </For>
+                    </Navigation>
+                </Show>
+            </AppShellContent>
+            <AppShellFooter>
+                <Footer />
+            </AppShellFooter>
+        </Providers>
+    )
 }
 
 export default Home

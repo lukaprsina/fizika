@@ -2,12 +2,11 @@ import { Match, Switch } from "solid-js";
 import { useRouteData } from "solid-start";
 import { createServerData$ } from "solid-start/server";
 import Header from "~/components/Header";
-import { AppShellHeader, AppShellContent } from "~/layouts/Providers";
+import Providers, { AppShellHeader, AppShellContent } from "~/layouts/Providers";
 
-import { authenticator } from "~/server/auth";
-import { authClient } from "~/utils/auth";
+import { authOptions } from "~/server/auth"
 
-export const routeData = () => {
+/* export const routeData = () => {
     return {
         user: createServerData$(async (_, { request }) => {
             const user = await authenticator.isAuthenticated(request);
@@ -15,17 +14,18 @@ export const routeData = () => {
             return user;
         }),
     };
-};
+}; */
 
 export default function Account() {
-    const { user } = useRouteData<typeof routeData>();
+    // const { user } = useRouteData<typeof routeData>();
 
-    return <>
-        <AppShellHeader>
-            <Header />
-        </AppShellHeader>
-        <AppShellContent>
-            <Switch
+    return (
+        <Providers>
+            <AppShellHeader>
+                <Header />
+            </AppShellHeader>
+            <AppShellContent>
+                {/* <Switch
                 fallback={<>
                     <div>
                         <p>
@@ -82,8 +82,8 @@ export default function Account() {
                         </button>
                     </div>
                 </Match>
-            </Switch>
-        </AppShellContent>
-    </>
-
+            </Switch> */}
+            </AppShellContent>
+        </Providers>
+    )
 }

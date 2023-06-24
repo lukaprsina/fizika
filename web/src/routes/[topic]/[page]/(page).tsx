@@ -9,16 +9,14 @@ import { A, useNavigate, useParams, useRouteData } from "solid-start";
 import { createServerData$ } from "solid-start/server";
 import Header from "~/components/Header";
 import { Tab, TabButton, TabButtonsContainer, TabsContext } from "~/components/Tabs";
-import { AppShellContent, AppShellHeader, useEditToggle } from "~/layouts/Providers";
-import { authenticator } from "~/server/auth";
-import { prisma } from "~/server/db/client";
+import Providers, { AppShellContent, AppShellHeader, useEditToggle } from "~/layouts/Providers";
 import styles from "./page.module.scss"
 import MonacoEditor from "~/components/MonacoEditor";
 
 export function routeData({ params }: RouteDataArgs) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return createServerData$(async ([_, topicArg, pageArg], { request }) => {
-        const topic = await prisma.topic.findUnique({
+        const topic = await prisma?.topic.findUnique({
             where: {
                 title: topicArg
             }
@@ -29,7 +27,7 @@ export function routeData({ params }: RouteDataArgs) {
         if (isNaN(page_id)) return null;
         if (!topic) return null;
 
-        const page = await prisma.page.findUnique({
+        const page = await prisma?.page.findUnique({
             where: {
                 topicId_id: {
                     id: page_id,
@@ -38,15 +36,15 @@ export function routeData({ params }: RouteDataArgs) {
             }
         });
 
-        const page_count = await prisma.page.count({
+        const page_count = await prisma?.page.count({
             where: {
                 topicId: topic.id,
             }
         })
 
-        const user = await authenticator.isAuthenticated(request);
+        // const user = await authenticator.isAuthenticated(request);
 
-        return { page, user, page_count };
+        return { page, user: null, page_count };
     }, {
         key: () => ["page", decodeURI(params.topic), decodeURI(params.page)]
     })
@@ -71,83 +69,85 @@ const PageNavbar: Component = () => {
         }
     })
 
-    return <>
-        <TabsContext defaultIndex={1}>{({ activeTab, setActiveTab }) => <>
-            <TabButtonsContainer>
-                <TabButton
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
-                    index={0}
-                >
-                    Navbar
-                </TabButton>
-                <TabButton
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
-                    index={1}
-                >
-                    Page
-                </TabButton>
-                <TabButton
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
-                    index={2}
-                >
-                    Explanation
-                </TabButton>
-            </TabButtonsContainer>
-            <AppShellHeader>
-                <Header topic={decodeURI(params.topic)} user={page_data()?.user} />
-            </AppShellHeader>
-            <AppShellContent>
-                <Tab
-                    activeTab={activeTab}
-                    index={0}
-                >
-                    Navbar
-                </Tab>
-                <Tab
-                    activeTab={activeTab}
-                    index={1}
-                    hidden={showEditor()}
-                >
-                    <Show when={page_data()?.page?.html}>
-                        <div
-                            class="flex justify-center"
-                        >
+    return (
+        <Providers>
+            <TabsContext defaultIndex={1}>{({ activeTab, setActiveTab }) => <>
+                <TabButtonsContainer>
+                    <TabButton
+                        activeTab={activeTab}
+                        setActiveTab={setActiveTab}
+                        index={0}
+                    >
+                        Navbar
+                    </TabButton>
+                    <TabButton
+                        activeTab={activeTab}
+                        setActiveTab={setActiveTab}
+                        index={1}
+                    >
+                        Page
+                    </TabButton>
+                    <TabButton
+                        activeTab={activeTab}
+                        setActiveTab={setActiveTab}
+                        index={2}
+                    >
+                        Explanation
+                    </TabButton>
+                </TabButtonsContainer>
+                <AppShellHeader>
+                    <Header topic={decodeURI(params.topic)} user={page_data()?.user} />
+                </AppShellHeader>
+                <AppShellContent>
+                    <Tab
+                        activeTab={activeTab}
+                        index={0}
+                    >
+                        Navbar
+                    </Tab>
+                    <Tab
+                        activeTab={activeTab}
+                        index={1}
+                        hidden={showEditor()}
+                    >
+                        <Show when={page_data()?.page?.html}>
                             <div
-                                class={styles.page_content}
-                                // eslint-disable-next-line solid/no-innerhtml
-                                innerHTML={page_data()?.page?.html}
-                            />
-                        </div>
-                    </Show>
-                    {/* <FileManager page={page_data()?.page ?? undefined} /> */}
-                    <NavButtons
-                        keyboard={false}
-                        page_count={page_data()?.page_count ?? 0}
-                    />
-                </Tab>
-                <Tab
-                    activeTab={activeTab}
-                    index={1}
-                    hidden={!showEditor()}
-                >
-                    <MonacoEditor
-                        active={activeTab() == 1 && showEditor()}
-                        user={page_data()?.user ?? undefined}
-                    />
-                    <NavButtons page_count={page_data()?.page_count ?? 0} />
-                </Tab>
-                <Tab
-                    activeTab={activeTab}
-                    index={2}
-                >
-                    Explanation
-                </Tab>
-            </AppShellContent>
-        </>}</TabsContext>
-    </>
+                                class="flex justify-center"
+                            >
+                                <div
+                                    class={styles.page_content}
+                                    // eslint-disable-next-line solid/no-innerhtml
+                                    innerHTML={page_data()?.page?.html}
+                                />
+                            </div>
+                        </Show>
+                        {/* <FileManager page={page_data()?.page ?? undefined} /> */}
+                        <NavButtons
+                            keyboard={false}
+                            page_count={page_data()?.page_count ?? 0}
+                        />
+                    </Tab>
+                    <Tab
+                        activeTab={activeTab}
+                        index={1}
+                        hidden={!showEditor()}
+                    >
+                        <MonacoEditor
+                            active={activeTab() == 1 && showEditor()}
+                            user={page_data()?.user ?? undefined}
+                        />
+                        <NavButtons page_count={page_data()?.page_count ?? 0} />
+                    </Tab>
+                    <Tab
+                        activeTab={activeTab}
+                        index={2}
+                    >
+                        Explanation
+                    </Tab>
+                </AppShellContent>
+            </>}</TabsContext>
+        </Providers>
+    )
 }
 
 type NavButtonsType = {

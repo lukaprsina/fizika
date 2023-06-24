@@ -1,5 +1,5 @@
 import { type SolidAuthConfig } from "@solid-auth/base";
-import Discord from "@auth/core/providers/discord";
+import Google from "@auth/core/providers/google";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "./db";
 import { serverEnv } from "~/env/server";
@@ -21,12 +21,12 @@ export const authOptions: SolidAuthConfig = {
       return session;
     },
   },
-  // @ts-expect-error - this is a valid adapter
+  // TODO: @ ts-expect-error - this is a valid adapter
   adapter: PrismaAdapter(prisma),
   providers: [
-    Discord({
-      clientId: serverEnv.DISCORD_ID,
-      clientSecret: serverEnv.DISCORD_SECRET,
+    Google({
+      clientId: serverEnv.CLIENT_ID_GOOGLE,
+      clientSecret: serverEnv.CLIENT_SECRET_GOOGLE,
     }),
   ],
   debug: false,

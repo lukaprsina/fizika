@@ -1,0 +1,8 @@
+{
+    "name": "Fizika ŠCNM",
+    "short_name": "Fizika",
+    "start_url": "/",
+    "background_color": "#f2f3f5",
+    "display": "standalone",
+    "theme_color": "#0ea5e9"
+}

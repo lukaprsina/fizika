@@ -1,7 +1,7 @@
 import type { Component, ParentComponent } from "solid-js";
 import { A } from "solid-start";
 
-export const Sidebar: ParentComponent = (props) => {
+export const Navigation: ParentComponent = (props) => {
     return <div>{props.children}</div>
 }
 
@@ -10,7 +10,7 @@ type NavbarItemType = {
     href?: string;
 }
 
-export const SidebarItem: Component<NavbarItemType> = (props) => {
+export const NavigationItem: Component<NavbarItemType> = (props) => {
     return (
         <A
             class="block p-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md"
