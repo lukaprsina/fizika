@@ -1,0 +1,8 @@
+/target
+/gradivo
+/gradivo_out
+/courses/
+/courses_output/
+.dotenv
+/data.ms
+/__pycache__

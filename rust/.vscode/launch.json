@@ -1,0 +1,249 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in library 'fizika'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=fizika"
+                ],
+                "filter": {
+                    "name": "fizika",
+                    "kind": "lib"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'fizika'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=fizika",
+                    "--package=fizika"
+                ],
+                "filter": {
+                    "name": "fizika",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'fizika'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=fizika",
+                    "--package=fizika"
+                ],
+                "filter": {
+                    "name": "fizika",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'html_js'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=html_js",
+                    "--package=fizika"
+                ],
+                "filter": {
+                    "name": "html_js",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'html_js'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=html_js",
+                    "--package=fizika"
+                ],
+                "filter": {
+                    "name": "html_js",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'js'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=js",
+                    "--package=fizika"
+                ],
+                "filter": {
+                    "name": "js",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'js'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=js",
+                    "--package=fizika"
+                ],
+                "filter": {
+                    "name": "js",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'parse_gradivo'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=parse_gradivo",
+                    "--package=fizika"
+                ],
+                "filter": {
+                    "name": "parse_gradivo",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'parse_gradivo'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=parse_gradivo",
+                    "--package=fizika"
+                ],
+                "filter": {
+                    "name": "parse_gradivo",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'scrape'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=scrape",
+                    "--package=fizika"
+                ],
+                "filter": {
+                    "name": "scrape",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'scrape'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=scrape",
+                    "--package=fizika"
+                ],
+                "filter": {
+                    "name": "scrape",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug executable 'testing'",
+            "cargo": {
+                "args": [
+                    "build",
+                    "--bin=testing",
+                    "--package=fizika"
+                ],
+                "filter": {
+                    "name": "testing",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "name": "Debug unit tests in executable 'testing'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--bin=testing",
+                    "--package=fizika"
+                ],
+                "filter": {
+                    "name": "testing",
+                    "kind": "bin"
+                }
+            },
+            "args": [],
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}
