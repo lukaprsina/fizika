@@ -1,0 +1,18 @@
+.page_content {
+    max-width: 1100px;
+}
+
+.page_content>div>* {
+    // border: 1px solid red;
+    margin-bottom: 20px;
+}
+
+.page_content figure {
+    figcaption {
+        margin-top: 10px;
+    }
+
+    img {
+        width: 100%;
+    }
+}

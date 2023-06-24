@@ -130,7 +130,7 @@ pub fn recurse_node(
 
                             // TODO: caption
                             contents.push_str(&format!(
-                                r#"<Video href="{}" caption="{}" />{}"#,
+                                r#"<video href="{}" caption="{}" />{}"#,
                                 href, "", "\n"
                             ));
                         }
