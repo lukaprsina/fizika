@@ -1,23 +1,10 @@
-import { Match, Switch } from "solid-js";
-import { useRouteData } from "solid-start";
-import { createServerData$ } from "solid-start/server";
+import { createSession, signIn, signOut } from "@solid-auth/base/client";
+import { Show } from "solid-js";
 import Header from "~/components/Header";
 import Providers, { AppShellHeader, AppShellContent } from "~/layouts/Providers";
 
-import { authOptions } from "~/server/auth"
-
-/* export const routeData = () => {
-    return {
-        user: createServerData$(async (_, { request }) => {
-            const user = await authenticator.isAuthenticated(request);
-            console.log("User from routeData", user)
-            return user;
-        }),
-    };
-}; */
-
 export default function Account() {
-    // const { user } = useRouteData<typeof routeData>();
+    const session = createSession();
 
     return (
         <Providers>
@@ -25,28 +12,31 @@ export default function Account() {
                 <Header />
             </AppShellHeader>
             <AppShellContent>
-                {/* <Switch
-                fallback={<>
-                    <div>
+                <Show
+                    when={session()}
+                    fallback={<div>
                         <p>
                             <button
                                 onClick={() => {
-                                    authClient.login("github", {
-                                        successRedirect: "/account",
-                                        failureRedirect: "/",
-                                    })
+                                    signIn(undefined, { redirectTo: "/" })
                                 }}
                             >
-                                Login with Github
+                                Login
                             </button>
                         </p>
                         <p>
                             <button
                                 onClick={() => {
-                                    authClient.login("microsoft", {
-                                        successRedirect: "/account",
-                                        failureRedirect: "/",
-                                    })
+                                    signIn("google", { redirectTo: "/" })
+                                }}
+                            >
+                                Login with Google
+                            </button>
+                        </p>
+                        <p>
+                            <button
+                                onClick={() => {
+                                    signIn("azure-ad-b2c", { redirectTo: "/" })
                                 }}
                             >
                                 Login with Microsoft
@@ -55,34 +45,25 @@ export default function Account() {
                         <p>
                             <button
                                 onClick={() => {
-                                    authClient.login("google", {
-                                        successRedirect: "/account",
-                                        failureRedirect: "/",
-                                        throwOnError: true,
-                                    })
+                                    signIn("github", { redirectTo: "/" })
                                 }}
                             >
-                                Login with Google
+                                Login with Github
                             </button>
                         </p>
-                    </div>
-                </>}
-            >
-                <Match when={user()}>
+                    </div>}
+                >
                     <div class="flex flex-col items-start">
-                        <span>Hi {user()?.displayName}!</span>
+                        <span>Hi {session()?.user?.name}!</span>
                         <button
                             onClick={() =>
-                                authClient.logout({
-                                    redirectTo: "/account",
-                                })
+                                signOut({ redirectTo: "/" })
                             }
                         >
                             Log Out
                         </button>
                     </div>
-                </Match>
-            </Switch> */}
+                </Show>
             </AppShellContent>
         </Providers>
     )

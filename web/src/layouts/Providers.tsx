@@ -1,4 +1,5 @@
 // @refresh reload
+import { SessionProvider } from "@solid-auth/base/client";
 import { createContextProvider } from "@solid-primitives/context";
 import { usePrefersDark } from "@solid-primitives/media";
 import type { CookieOptions, StorageSetter } from "@solid-primitives/storage";
@@ -99,13 +100,15 @@ const Providers: ParentComponent = (props) => {
     }
 
     return (
-        <ThemeToggleProvider dark={cookies.theme == "dark"} setCookies={setCookies}>
-            <EditToggleProvider initial={false}>
-                <div class="flex min-h-screen flex-col bg-white dark:text-white dark:bg-neutral-900">
-                    {props.children}
-                </div>
-            </EditToggleProvider>
-        </ThemeToggleProvider>
+        <SessionProvider>
+            <ThemeToggleProvider dark={cookies.theme == "dark"} setCookies={setCookies}>
+                <EditToggleProvider initial={false}>
+                    <div class="flex min-h-screen flex-col bg-white dark:text-white dark:bg-neutral-900">
+                        {props.children}
+                    </div>
+                </EditToggleProvider>
+            </ThemeToggleProvider>
+        </SessionProvider>
     )
 }
 

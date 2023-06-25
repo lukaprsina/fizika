@@ -1,7 +1,7 @@
 import { createShortcut } from "@solid-primitives/keyboard";
 import { Button } from "solid-headless";
 import { AiOutlineArrowLeft, AiOutlineArrowRight } from 'solid-icons/ai';
-import type { Component, ParentComponent } from "solid-js";
+import type { VoidComponent, ParentComponent } from "solid-js";
 import { mergeProps } from "solid-js";
 import { createEffect, createSignal, Show } from "solid-js";
 import type { RouteDataArgs } from "solid-start";
@@ -55,7 +55,7 @@ type ParamsType = {
     page: string;
 }
 
-const PageNavbar: Component = () => {
+const PageNavbar: VoidComponent = () => {
     const page_data = useRouteData<typeof routeData>();
     const params = useParams<ParamsType>();
     const editToggle = useEditToggle();
@@ -155,7 +155,7 @@ type NavButtonsType = {
     keyboard?: boolean;
 }
 
-const NavButtons: Component<NavButtonsType> = (props) => {
+const NavButtons: VoidComponent<NavButtonsType> = (props) => {
     const merged = mergeProps({ keyboard: true }, props)
     const params = useParams<ParamsType>();
     const [pageId, setPageId] = createSignal(NaN);
