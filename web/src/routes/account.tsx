@@ -24,37 +24,10 @@ export default function Account() {
                                 Login
                             </button>
                         </p>
-                        <p>
-                            <button
-                                onClick={() => {
-                                    signIn("google", { redirectTo: "/" })
-                                }}
-                            >
-                                Login with Google
-                            </button>
-                        </p>
-                        <p>
-                            <button
-                                onClick={() => {
-                                    signIn("azure-ad-b2c", { redirectTo: "/" })
-                                }}
-                            >
-                                Login with Microsoft
-                            </button>
-                        </p>
-                        <p>
-                            <button
-                                onClick={() => {
-                                    signIn("github", { redirectTo: "/" })
-                                }}
-                            >
-                                Login with Github
-                            </button>
-                        </p>
                     </div>}
                 >
                     <div class="flex flex-col items-start">
-                        <span>Hi {session()?.user?.name}!</span>
+                        <span>Živjo {session()?.user?.name}</span>
                         <button
                             onClick={() =>
                                 signOut({ redirectTo: "/" })
