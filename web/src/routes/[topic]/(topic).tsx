@@ -7,6 +7,7 @@ import Footer from "~/components/Footer";
 import Header from "~/components/Header";
 import { Navigation, NavigationItem } from "~/components/Navigation";
 import Providers, { AppShellContent, AppShellFooter, AppShellHeader } from "~/layouts/Providers";
+import { prisma } from "~/server/db"
 
 export function routeData({ params }: RouteDataArgs) {
     return createServerData$(async ([, topic_name]) => {
@@ -28,8 +29,6 @@ export function routeData({ params }: RouteDataArgs) {
                 id: true
             }
         });
-
-        console.log(pages?.length, "pages");
 
         return pages;
     }, {

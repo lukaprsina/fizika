@@ -6,6 +6,7 @@ import Footer from "~/components/Footer";
 import Header from "~/components/Header";
 import { Navigation, NavigationItem } from "~/components/Navigation";
 import Providers, { AppShellContent, AppShellFooter, AppShellHeader } from "~/layouts/Providers";
+import { prisma } from "~/server/db"
 
 export function routeData() {
     return createServerData$(async () => {

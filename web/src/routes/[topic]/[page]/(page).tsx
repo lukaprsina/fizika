@@ -12,6 +12,7 @@ import { Tab, TabButton, TabButtonsContainer, TabsContext } from "~/components/T
 import Providers, { AppShellContent, AppShellHeader, useEditToggle } from "~/layouts/Providers";
 import styles from "./page.module.scss"
 import MonacoEditor from "~/components/MonacoEditor";
+import { prisma } from "~/server/db"
 
 export function routeData({ params }: RouteDataArgs) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
