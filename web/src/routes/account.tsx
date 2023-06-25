@@ -1,10 +1,24 @@
-import { createSession, signIn, signOut } from "@solid-auth/base/client";
-import { Show } from "solid-js";
+import { getSession } from "@solid-auth/base";
+import { signIn, signOut } from "@solid-auth/base/client";
+import type { VoidComponent } from "solid-js";
+import { Show, Suspense } from "solid-js";
+import { useRouteData } from "solid-start";
+import { createServerData$ } from "solid-start/server";
 import Header from "~/components/Header";
 import Providers, { AppShellHeader, AppShellContent } from "~/layouts/Providers";
+import { authOptions } from "~/server/auth";
 
-export default function Account() {
-    const session = createSession();
+export const routeData = () => {
+    return createServerData$(
+        async (_, { request }) => {
+            return await getSession(request, authOptions);
+        },
+        { key: () => ["auth_user"] }
+    );
+};
+
+const Account: VoidComponent = () => {
+    const user = useRouteData<typeof routeData>();
 
     return (
         <Providers>
@@ -12,32 +26,38 @@ export default function Account() {
                 <Header />
             </AppShellHeader>
             <AppShellContent>
-                <Show
-                    when={session()}
-                    fallback={<div>
-                        <p>
+                <Suspense fallback={<p>Waiting...</p>}>
+                    <Show
+                        when={user()}
+                        fallback={<div>
+                            <p>
+                                <button
+                                    onClick={() => {
+                                        signIn(undefined, { redirectTo: "/" })
+                                    }}
+                                >
+                                    Login
+                                </button>
+                            </p>
+                        </div>}
+                    >
+                        <div class="flex flex-col items-start">
+                            <span>Živjo {user()?.user?.name}</span>
                             <button
-                                onClick={() => {
-                                    signIn(undefined, { redirectTo: "/" })
-                                }}
+                                onClick={() =>
+                                    signOut({ redirectTo: "/" })
+                                }
                             >
-                                Login
+                                Log Out
                             </button>
-                        </p>
-                    </div>}
-                >
-                    <div class="flex flex-col items-start">
-                        <span>Živjo {session()?.user?.name}</span>
-                        <button
-                            onClick={() =>
-                                signOut({ redirectTo: "/" })
-                            }
-                        >
-                            Log Out
-                        </button>
-                    </div>
-                </Show>
+                        </div>
+                    </Show>
+                </Suspense>
             </AppShellContent>
         </Providers>
     )
+
+
 }
+
+export default Account;

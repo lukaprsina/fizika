@@ -4,14 +4,6 @@ import path from 'path';
 
 const prisma = new PrismaClient()
 
-function toHex(str) {
-    const result = [];
-    for (var i = 0; i < str.length; i++) {
-        result.push(str.charCodeAt(i))
-    }
-    return result;
-}
-
 async function main() {
     const courses_dir = "../rust/courses_output";
 
@@ -33,13 +25,13 @@ async function main() {
 
     const rozic = await prisma.user.create({
         data: {
-            displayName: "Matej Rožič",
+            name: "Matej Rožič",
         }
     })
 
     const erste = await prisma.user.create({
         data: {
-            displayName: "Andreja Eršte",
+            name: "Andreja Eršte",
         }
     })
 
@@ -75,7 +67,7 @@ async function main() {
         } */
 
         const authors_raw = script_json.metadata.author
-        const authors = authors_raw.map((author) => {
+        const authors = authors_raw.map((author: string) => {
             switch (author) {
                 case "Andreja Eršte":
                     return {
@@ -90,7 +82,7 @@ async function main() {
             }
         })
 
-        const keywords = script_json.metadata.keyword.map((keyword) => ({
+        const keywords = script_json.metadata.keyword.map((keyword: string) => ({
             create: { value: keyword },
             where: { value: keyword }
         }))

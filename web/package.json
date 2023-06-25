@@ -6,6 +6,7 @@
     "build": "solid-start build",
     "lint": "eslint --fix \"**/*.{ts,tsx,js,jsx}\"",
     "push": "prisma db push",
+    "seed": "prisma db seed",
     "postinstall": "prisma generate"
   },
   "type": "module",
@@ -56,6 +57,6 @@
     "node": ">=16"
   },
   "prisma": {
-    "seed": "node prisma/seed.js"
+    "seed": "npx tsx prisma/seed.ts"
   }
 }

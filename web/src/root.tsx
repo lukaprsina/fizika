@@ -30,7 +30,7 @@ export default function Root() {
       <Body>
         <trpc.Provider queryClient={queryClient}>
           <SessionProvider>
-            <Suspense>
+            <Suspense fallback={<p>Deiz nuts</p>}>
               <ErrorBoundary>
                 <Routes>
                   <FileRoutes />

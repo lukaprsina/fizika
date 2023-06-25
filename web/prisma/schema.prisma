@@ -42,8 +42,7 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
-    Topic         Topic?    @relation(fields: [topicId], references: [id])
-    topicId       Int?
+    topics        Topic[]
 }
 
 model VerificationToken {
