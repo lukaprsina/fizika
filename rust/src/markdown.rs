@@ -5,9 +5,15 @@ use select::{
     node::Node,
     predicate::{self, And, Class, Comment, Name},
 };
+use tracing::{info, warn};
 use uuid::Uuid;
 
 use crate::utils::get_only_element;
+
+/* TODO: gumbki na info
+math expressni
+za listi enter
+ */
 
 pub fn recurse_node(
     node: Node,
@@ -78,16 +84,7 @@ pub fn recurse_node(
                                 }
                                 None => match caption_child.as_text() {
                                     Some(text) => {
-                                        contents.push_str(&format!(
-                                            r#"<figure>
-    <img src="{}" alt="{}">
-    <figcaption>{}</figcaption>
-</figure>{}"#,
-                                            &src,
-                                            node.attr("alt").unwrap_or_default(),
-                                            text,
-                                            "\n",
-                                        ));
+                                        contents.push_str(&format!("![{}]({})\n", text, &src));
                                     }
                                     None => {
                                         panic!("No text in caption");
@@ -128,11 +125,14 @@ pub fn recurse_node(
                             let file_type = href.rsplit_once(".").unwrap().1;
                             let video_type = &format!("video/{}", file_type);
 
-                            // TODO: caption
-                            contents.push_str(&format!(
-                                r#"<video href="{}" caption="{}" />{}"#,
-                                href, "", "\n"
-                            ));
+                            // TODO: course 38 page 8 fotoefekt link
+                            info!("{}", p.html());
+                            contents.push_str(&format!("![{}]({})\n", p.text(), href));
+                            p.children().for_each(|child| {
+                                if !child.name().is_none() {
+                                    warn!("LINK")
+                                }
+                            });
                         }
                         None => {}
                     }

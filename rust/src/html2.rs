@@ -18,6 +18,7 @@ use crate::{
     // parse_file::PageConfig,
     process_html::{process_exercise, process_popup, ExerciseError},
     utils::{get_only_element, uppercase_first_letter, ChapterInfo},
+    PAGE_NAME,
 };
 
 pub static mut CLASSES: Lazy<HashSet<String>> = Lazy::new(|| HashSet::new());
@@ -101,7 +102,11 @@ fn process_chapter(
     }
 
     fs::create_dir_all(&course_output_dir)?;
-    println!("\n\nCourse dir: {course_dir:#?}");
+    unsafe {
+        if PAGE_NAME {
+            println!("\n\nCourse dir: {course_dir:#?}");
+        }
+    }
 
     fs::copy(
         course_dir.join("output.json"),
@@ -220,8 +225,11 @@ fn parse_exercise2(exercise: Exercise, output_page_path: &Path, course_name: Str
                     })?;
                     fs::write(&config_path, config_json.as_bytes())?;
                 }
-
-                println!("Course:\t{:#?}", index_path);
+                unsafe {
+                    if PAGE_NAME {
+                        println!("Course:\t{:#?}", index_path);
+                    }
+                }
 
                 write_node_to_file(&mut index_file, area, course_name.clone());
             }
@@ -244,7 +252,11 @@ fn parse_exercise2(exercise: Exercise, output_page_path: &Path, course_name: Str
         let popup_dir = popups_dir.join(format!("{}.html", popup.slide.id));
         let mut file = File::create(&popup_dir)?;
 
-        println!("Popup:\t{:#?}", popup_dir);
+        unsafe {
+            if PAGE_NAME {
+                println!("Popup:\t{:#?}", popup_dir);
+            }
+        }
 
         write_node_to_file(&mut file, area, course_name.clone());
     }

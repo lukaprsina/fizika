@@ -13,11 +13,10 @@ import Providers, { AppShellContent, AppShellHeader, useEditToggle } from "~/lay
 import styles from "./page.module.scss"
 import MonacoEditor from "~/components/MonacoEditor";
 import { prisma } from "~/server/db"
-import { marked } from "marked";
-import DOMPurify from "dompurify"
 import { authOptions } from "~/server/auth";
 import { getSession } from "@solid-auth/base";
 import type { Page as PageType } from "@prisma/client";
+import Markdown from "~/components/Markdown";
 
 export function routeData({ params }: RouteDataArgs) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -74,25 +73,9 @@ const Page: VoidComponent = () => {
     const params = useParams<ParamsType>();
     const editToggle = useEditToggle();
     const [showEditor, setShowEditor] = createSignal(false);
-    const [markdown, setMarkdown] = createSignal("");
-
 
     createEffect(() => {
         setShowEditor(Boolean(editToggle?.edit()))
-    })
-
-    createEffect(() => {
-        const markdown = page_data()?.page?.html;
-        if (!markdown) return;
-
-        const sanitized_html = DOMPurify.sanitize(marked.parse(
-            markdown
-        ))
-
-        console.log(sanitized_html)
-        console.log(markdown)
-
-        setMarkdown(sanitized_html)
     })
 
     return (
@@ -142,9 +125,9 @@ const Page: VoidComponent = () => {
                             >
                                 <div
                                     class={styles.page_content}
-                                    // eslint-disable-next-line solid/no-innerhtml
-                                    innerHTML={markdown()}
-                                />
+                                >
+                                    <Markdown markdown={page_data()?.page?.html} />
+                                </div>
                             </div>
                         </Show>
                         {/* <FileManager page={page_data()?.page ?? undefined} /> */}

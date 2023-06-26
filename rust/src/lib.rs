@@ -9,6 +9,7 @@ pub mod scrape_utils;
 pub mod utils;
 
 pub static mut MATH_NOT_RENDERED_COUNTER: i32 = 0;
+pub static mut PAGE_NAME: bool = false;
 
 pub fn init() -> Result<()> {
     use tracing_subscriber::prelude::*;

@@ -63,15 +63,15 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug executable 'html_js'",
+            "name": "Debug executable 'md'",
             "cargo": {
                 "args": [
                     "build",
-                    "--bin=html_js",
+                    "--bin=md",
                     "--package=fizika"
                 ],
                 "filter": {
-                    "name": "html_js",
+                    "name": "md",
                     "kind": "bin"
                 }
             },
@@ -81,16 +81,16 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in executable 'html_js'",
+            "name": "Debug unit tests in executable 'md'",
             "cargo": {
                 "args": [
                     "test",
                     "--no-run",
-                    "--bin=html_js",
+                    "--bin=md",
                     "--package=fizika"
                 ],
                 "filter": {
-                    "name": "html_js",
+                    "name": "md",
                     "kind": "bin"
                 }
             },
@@ -137,43 +137,6 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug executable 'parse_gradivo'",
-            "cargo": {
-                "args": [
-                    "build",
-                    "--bin=parse_gradivo",
-                    "--package=fizika"
-                ],
-                "filter": {
-                    "name": "parse_gradivo",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
-            "name": "Debug unit tests in executable 'parse_gradivo'",
-            "cargo": {
-                "args": [
-                    "test",
-                    "--no-run",
-                    "--bin=parse_gradivo",
-                    "--package=fizika"
-                ],
-                "filter": {
-                    "name": "parse_gradivo",
-                    "kind": "bin"
-                }
-            },
-            "args": [],
-            "cwd": "${workspaceFolder}"
-        },
-        {
-            "type": "lldb",
-            "request": "launch",
             "name": "Debug executable 'scrape'",
             "cargo": {
                 "args": [
@@ -211,15 +174,15 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug executable 'testing'",
+            "name": "Debug executable 'parse_gradivo'",
             "cargo": {
                 "args": [
                     "build",
-                    "--bin=testing",
+                    "--bin=parse_gradivo",
                     "--package=fizika"
                 ],
                 "filter": {
-                    "name": "testing",
+                    "name": "parse_gradivo",
                     "kind": "bin"
                 }
             },
@@ -229,16 +192,16 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug unit tests in executable 'testing'",
+            "name": "Debug unit tests in executable 'parse_gradivo'",
             "cargo": {
                 "args": [
                     "test",
                     "--no-run",
-                    "--bin=testing",
+                    "--bin=parse_gradivo",
                     "--package=fizika"
                 ],
                 "filter": {
-                    "name": "testing",
+                    "name": "parse_gradivo",
                     "kind": "bin"
                 }
             },

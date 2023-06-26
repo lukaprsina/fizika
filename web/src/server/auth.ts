@@ -1,8 +1,5 @@
 import { type SolidAuthConfig } from "@solid-auth/base";
 import Google from "@auth/core/providers/google";
-import Github from "@auth/core/providers/github";
-import Microsoft from "@auth/core/providers/azure-ad-b2c";
-import Discord from "@auth/core/providers/discord";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "./db";
 import { serverEnv } from "~/env/server";
@@ -27,13 +24,14 @@ export const authOptions: SolidAuthConfig = {
   // @ts-expect-error - this is a valid adapter
   adapter: PrismaAdapter(prisma),
   providers: [
-    Discord({
-      clientId: serverEnv.CLIENT_ID_DISCORD,
-      clientSecret: serverEnv.CLIENT_SECRET_DISCORD,
-    }),
     Google({
       clientId: serverEnv.CLIENT_ID_GOOGLE,
       clientSecret: serverEnv.CLIENT_SECRET_GOOGLE,
+    }),
+    /*
+    Discord({
+      clientId: serverEnv.CLIENT_ID_DISCORD,
+      clientSecret: serverEnv.CLIENT_SECRET_DISCORD,
     }),
     Microsoft({
       clientId: serverEnv.CLIENT_ID_MICROSOFT,
@@ -42,7 +40,7 @@ export const authOptions: SolidAuthConfig = {
     Github({
       clientId: serverEnv.CLIENT_ID_GITHUB,
       clientSecret: serverEnv.CLIENT_SECRET_GITHUB,
-    }),
+    }), */
   ],
   debug: false,
 };
