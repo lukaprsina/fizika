@@ -89,10 +89,10 @@ model Topic {
 }
 
 model Page {
-    id    Int
-    title String?
-    html  String
-    text  String
+    id       Int
+    title    String?
+    markdown String
+    text     String
 
     topic   Topic @relation(fields: [topicId], references: [id])
     topicId Int
@@ -108,22 +108,11 @@ model Page {
 
 model Resource {
     id        Int        @id @default(autoincrement())
-    modals    Modal[]
     variables Variable[]
 
     course Course?
     topic  Topic?
     page   Page?
-}
-
-model Modal {
-    id      Int     @id @default(autoincrement())
-    heading String?
-    html    String
-    text    String
-
-    resource   Resource? @relation(fields: [resourceId], references: [id])
-    resourceId Int?
 }
 
 model Metadata {

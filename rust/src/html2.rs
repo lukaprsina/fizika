@@ -11,7 +11,6 @@ use itertools::Itertools;
 use once_cell::sync::Lazy;
 use select::{document::Document, predicate};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 
 use crate::{
     markdown::recurse_node,
@@ -266,20 +265,28 @@ fn parse_exercise2(exercise: Exercise, output_page_path: &Path, course_name: Str
 
 fn write_node_to_file(file: &mut File, area: select::node::Node, course_name: String) {
     let mut parents: Vec<Option<String>> = Vec::new();
-    let mut new_popups: HashMap<String, Uuid> = HashMap::new();
     let mut question_mark_course = 0;
-    let mut contents = String::new();
+    let mut contents: Vec<String> = Vec::new();
 
     recurse_node(
         area,
         course_name.clone(),
         &mut parents,
-        &mut new_popups,
         &mut contents,
         &mut question_mark_course,
     );
 
-    file.write(contents.as_bytes())
+    let result = contents
+        .iter()
+        .map(|line| {
+            let mut trimmed = line.trim().to_string();
+            trimmed.push('\n');
+            trimmed
+        })
+        .collect_vec()
+        .concat();
+
+    file.write(result.as_bytes())
         .expect(&format!("Can't write to file: {}", course_name));
 }
 

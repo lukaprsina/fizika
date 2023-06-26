@@ -6,31 +6,11 @@ import * as jsx_runtime from 'solid-jsx'
 
 // TODO: async import
 import { getType } from "mime-lite"
+import { Button } from "solid-headless";
 
 type MarkdownProps = {
     markdown?: string
 };
-
-const text = `Posnetki:
-- [radijski teleskop 1](https://youtu.be/a_7SBglFfik)
-
-- [radijski teleskop 2](https://youtu.be/m1Pg4_5k_9s)
-
-- [Hubblov teleskop](https://youtu.be/ygevBQWt_LE)
-
-Astronomijo v 20. stoletju zaznamujejo:
-- Nadaljnji razvoj teleskopov (npr. radijski in IR teleskopi) in astronomskih observatorijev.
-- Razumevanje zgradbe zvezd: zvezde so v glavnem iz vodika in deloma helija. Svetijo zaradi jedrskega zlivanja (zlasti vodika) v njihovih sredicah. Njihova starost lahko doseže več miljard let (Sonce je staro 4,7 milijarde).
-- Meritve fizikalnih količin zvezd: površinske temperature, kemične sestave, sija, mase, vrtenja, hitrosti gibanja, oddaljenosti.
-- Razumevanje zgradbe in starosti vesolja (Einstanova posebna in splošna teorija relativnosti, Hubblov zakon): vesolje je imelo svoj začetek pred 13,7 milijardami let.
-- Vesoljski programi ([NASA](https://www.nasa.gov/)
-,[ESA](https://www.esa.int/)
-), teleskopi v vesoju ([Hubblov vesoljski teleskop](http://hubblesite.org/the_telescope/)
-), raziskovanje osončja s sondami (npr. Pioneer, Voyager).Vesoljski teleskopi (ESA)Pogled v preteklost (Hubble)Astronomija je v 21. stoletju usmerjena v:
-- odkrivanje planetov okoli drugih zvezd (eksoplaneti), zlasti Zemlji podobnih planetov
-- odkrivanje sestave vesolja
-- raziskovanje objektov v Osončju (planetov in njihovih naravnih satelitov, asteroidov, kometov,...)
-- odkrivanje in raziskovanje bjektov globokega neba (galaksije, meglice, kopice,..)Raziskovanje heliosfere`
 
 const components = {
     img: (props: { src: string, alt: string }) => {
@@ -56,6 +36,15 @@ const components = {
                 </figure>
             </Match>
         </Switch >
+    },
+    Explain: (props: { prompt: string, children: JSX.Element }) => {
+        const [hidden, setHidden] = createSignal(true)
+        return <>
+            <button onClick={() => setHidden(!hidden())}>
+                {props.prompt}
+            </button>
+            <Show when={!hidden()}>{props.children}</Show>
+        </>
     }
 }
 

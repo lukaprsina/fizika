@@ -2,7 +2,7 @@ import fs from 'fs';
 import { PrismaClient } from "@prisma/client";
 import path from 'path';
 
-const MAX_COURSES = 1;
+const LIMIT_COURSES = 1;
 const prisma = new PrismaClient()
 
 async function main() {
@@ -37,7 +37,7 @@ async function main() {
     })
 
     let i = 0;
-    while (true) {
+    while (i < LIMIT_COURSES) {
         if (i == 2 || i == 3) {
             i++;
             continue;
@@ -116,7 +116,7 @@ async function main() {
         })
 
         let j = 0;
-        while (j < MAX_COURSES) {
+        while (true) {
             const exercise_dir = path.join(course_dir, `pages/page_${j}`)
             const exercise_file = path.join(exercise_dir, "index.html")
 
@@ -124,48 +124,47 @@ async function main() {
                 break;
 
             const popups_dir = path.join(exercise_dir, "popups");
-            const popup_ids = []
             console.log("\tpage dir", exercise_dir)
 
-            if (fs.existsSync(popups_dir)) {
-                const contents = fs.readdirSync(popups_dir)
-
-                for (const popup_file of contents) {
-                    const popup_path = path.join(popups_dir, popup_file)
-                    console.log("\t\tpopup", popup_file, popup_path)
-
-                    const file = fs.readFileSync(popup_path);
-                    const popup = await prisma.modal.create({
-                        data: {
-                            html: file.toString(),
-                            text: "Modal text",
-                            heading: "Modal heading"
-                        }
-                    });
-
-                    popup_ids.push({ id: popup.id })
-                }
-            }
-
-            const page_path = path.join(exercise_dir, "config.json")
-            const page_file = fs.readFileSync(page_path).toString();
-            const page_json = JSON.parse(page_file);
-
+            let exercise_contents = fs.readFileSync(exercise_file).toString();
             if (fs.existsSync(exercise_file)) {
+                if (fs.existsSync(popups_dir)) {
+                    const contents = fs.readdirSync(popups_dir)
+
+                    for (const popup_file of contents) {
+                        const popup_path = path.join(popups_dir, popup_file)
+                        console.log("\t\tpopup", popup_file, popup_path)
+
+                        const file = fs.readFileSync(popup_path);
+                        /* const popup = await prisma.modal.create({
+                            data: {
+                                html: file.toString(),
+                                text: "Modal text",
+                                heading: "Modal heading"
+                            }
+                        });
+    
+                        popup_ids.push({ id: popup.id }) */
+
+                        // place popups to main markdown
+                        const id = popup_file.replace(".html", "")
+                        exercise_contents = exercise_contents.replace(id, "\n" + file.toString() + "\n")
+                    }
+                }
+
+                const page_path = path.join(exercise_dir, "config.json")
+                const page_file = fs.readFileSync(page_path).toString();
+                const page_json = JSON.parse(page_file);
+
+
                 await prisma.page.create({
                     data: {
                         id: j,
-                        html: fs.readFileSync(exercise_file).toString(),
+                        markdown: exercise_contents,
                         text: "Page text",
                         title: page_json.subheading,
                         topic: { connect: { id: topic.id } },
-                        resource: {
-                            create: {
-                                modals: {
-                                    connect: popup_ids
-                                }
-                            }
-                        },
+                        resource: { create: {} },
                         metadata: { create: {} }
                     }
                 })

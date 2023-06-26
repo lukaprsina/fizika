@@ -119,14 +119,14 @@ const Page: VoidComponent = () => {
                         index={1}
                         hidden={showEditor()}
                     >
-                        <Show when={page_data()?.page?.html}>
+                        <Show when={page_data()?.page?.markdown}>
                             <div
                                 class="flex justify-center"
                             >
                                 <div
                                     class={styles.page_content}
                                 >
-                                    <Markdown markdown={page_data()?.page?.html} />
+                                    <Markdown markdown={page_data()?.page?.markdown} />
                                 </div>
                             </div>
                         </Show>

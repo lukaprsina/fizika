@@ -1,12 +1,9 @@
-use std::collections::HashMap;
-
 use itertools::Itertools;
 use select::{
     node::Node,
     predicate::{self, And, Class, Comment, Name},
 };
 use tracing::{info, warn};
-use uuid::Uuid;
 
 use crate::utils::get_only_element;
 
@@ -19,8 +16,7 @@ pub fn recurse_node(
     node: Node,
     course_name: String,
     parents: &mut Vec<Option<String>>,
-    popups: &mut HashMap<String, Uuid>,
-    contents: &mut String,
+    contents: &mut Vec<String>,
     question_mark_course: &mut usize,
 ) {
     if node.is(Class("placeholder-for-subslides")) {
@@ -71,7 +67,7 @@ pub fn recurse_node(
 
                         // "![{}]({} \"{}\")",
                         if caption_children.is_empty() {
-                            contents.push_str(&format!(
+                            contents.push(format!(
                                 "![{}]({})\n",
                                 node.attr("alt").unwrap_or_default(),
                                 &src,
@@ -80,11 +76,12 @@ pub fn recurse_node(
                             let caption_child = get_only_element(caption_children);
                             match caption_child.name() {
                                 Some(name) => {
-                                    println!("Tag caption, {}", name);
+                                    // TODO
+                                    // println!("Tag caption, {}", name);
                                 }
                                 None => match caption_child.as_text() {
                                     Some(text) => {
-                                        contents.push_str(&format!("![{}]({})\n", text, &src));
+                                        contents.push(format!("![{}]({})\n", text, &src));
                                     }
                                     None => {
                                         panic!("No text in caption");
@@ -127,7 +124,7 @@ pub fn recurse_node(
 
                             // TODO: course 38 page 8 fotoefekt link
                             info!("{}", p.html());
-                            contents.push_str(&format!("![{}]({})\n", p.text(), href));
+                            contents.push(format!("![{}]({})\n", p.text(), href));
                             p.children().for_each(|child| {
                                 if !child.name().is_none() {
                                     warn!("LINK")
@@ -169,7 +166,7 @@ pub fn recurse_node(
                 }
 
                 if let Some(ordered) = ordered {
-                    contents.push_str(&format!("\n{} ", ordered));
+                    contents.push(format!("\n{} ", ordered));
                 }
             }
             "a" => {
@@ -178,17 +175,17 @@ pub fn recurse_node(
                     .expect("Anchor must have an href")
                     .to_string();
 
+                let text = node.inner_html();
+                let text = text.trim();
+
                 if node.is(And(Class("goToSlide"), Class("explain"))) {
                     href.remove(0);
-                    // TODO
-                    let uuid = Uuid::new_v4();
-                    popups.insert(href, uuid);
-                } else {
-                    let text = node.inner_html();
-                    let text = text.trim();
-
                     if !text.is_empty() {
-                        contents.push_str(&format!("[{}]({})\n", text, href));
+                        contents.push(format!("<Explain prompt=\"{}\">{}</Explain>", text, href));
+                    }
+                } else {
+                    if !text.is_empty() {
+                        contents.push(format!("[{}]({})\n", text, href));
                     } else {
                         panic!("{}", node.html());
                     }
@@ -210,7 +207,7 @@ pub fn recurse_node(
                 node.children()
                     .for_each(|child| assert!(child.name().is_none()));
 
-                contents.push_str(&format!(
+                contents.push(format!(
                     "<Equation{}>{}</Equation>\n",
                     if full { " full " } else { "" },
                     node.inner_html()
@@ -223,7 +220,7 @@ pub fn recurse_node(
         None => {
             if !node.is(Comment) {
                 let html = node.html();
-                contents.push_str(&html.trim());
+                contents.push(html.trim().to_string());
             }
         }
     }
@@ -243,7 +240,6 @@ pub fn recurse_node(
                 child,
                 course_name.clone(),
                 &mut new_parents,
-                popups,
                 contents,
                 question_mark_course,
             );
