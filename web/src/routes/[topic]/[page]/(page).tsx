@@ -13,10 +13,22 @@ import Providers, { AppShellContent, AppShellHeader, useEditToggle } from "~/lay
 import styles from "./page.module.scss"
 import MonacoEditor from "~/components/MonacoEditor";
 import { prisma } from "~/server/db"
+import { marked } from "marked";
+import DOMPurify from "dompurify"
+import { authOptions } from "~/server/auth";
+import { getSession } from "@solid-auth/base";
+import type { Page as PageType } from "@prisma/client";
 
 export function routeData({ params }: RouteDataArgs) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     return createServerData$(async ([_, topicArg, pageArg], { request }) => {
+        const session = await getSession(request, authOptions);
+        const result: {
+            session: typeof session,
+            page_count?: number,
+            page?: PageType | null
+        } = { session }
+
         const topic = await prisma?.topic.findUnique({
             where: {
                 title: topicArg
@@ -25,8 +37,8 @@ export function routeData({ params }: RouteDataArgs) {
 
         const page_id = parseInt(pageArg);
 
-        if (isNaN(page_id)) return null;
-        if (!topic) return null;
+        if (isNaN(page_id)) return result;
+        if (!topic) return result;
 
         const page = await prisma?.page.findUnique({
             where: {
@@ -43,9 +55,10 @@ export function routeData({ params }: RouteDataArgs) {
             }
         })
 
-        // const user = await authenticator.isAuthenticated(request);
+        result.page_count = page_count
+        result.page = page
 
-        return { page, user: null, page_count };
+        return result;
     }, {
         key: () => ["page", decodeURI(params.topic), decodeURI(params.page)]
     })
@@ -56,18 +69,30 @@ type ParamsType = {
     page: string;
 }
 
-const PageNavbar: VoidComponent = () => {
+const Page: VoidComponent = () => {
     const page_data = useRouteData<typeof routeData>();
     const params = useParams<ParamsType>();
     const editToggle = useEditToggle();
     const [showEditor, setShowEditor] = createSignal(false);
+    const [markdown, setMarkdown] = createSignal("");
+
 
     createEffect(() => {
-        if (editToggle?.edit()) {
-            setShowEditor(true)
-        } else {
-            setShowEditor(false)
-        }
+        setShowEditor(Boolean(editToggle?.edit()))
+    })
+
+    createEffect(() => {
+        const markdown = page_data()?.page?.html;
+        if (!markdown) return;
+
+        const sanitized_html = DOMPurify.sanitize(marked.parse(
+            markdown
+        ))
+
+        console.log(sanitized_html)
+        console.log(markdown)
+
+        setMarkdown(sanitized_html)
     })
 
     return (
@@ -97,7 +122,7 @@ const PageNavbar: VoidComponent = () => {
                     </TabButton>
                 </TabButtonsContainer>
                 <AppShellHeader>
-                    <Header topic={decodeURI(params.topic)} user={page_data()?.user} />
+                    <Header topic={decodeURI(params.topic)} name={page_data()?.session?.user?.name} />
                 </AppShellHeader>
                 <AppShellContent>
                     <Tab
@@ -118,7 +143,7 @@ const PageNavbar: VoidComponent = () => {
                                 <div
                                     class={styles.page_content}
                                     // eslint-disable-next-line solid/no-innerhtml
-                                    innerHTML={page_data()?.page?.html}
+                                    innerHTML={markdown()}
                                 />
                             </div>
                         </Show>
@@ -135,7 +160,6 @@ const PageNavbar: VoidComponent = () => {
                     >
                         <MonacoEditor
                             active={activeTab() == 1 && showEditor()}
-                            user={page_data()?.user ?? undefined}
                         />
                         <NavButtons page_count={page_data()?.page_count ?? 0} />
                     </Tab>
@@ -226,4 +250,4 @@ const IconButton: ParentComponent = (props) => {
     )
 }
 
-export default PageNavbar
+export default Page

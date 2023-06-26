@@ -1,3 +1,4 @@
+import { getSession } from "@solid-auth/base";
 import type { VoidComponent } from "solid-js";
 import { For, Show } from "solid-js";
 import { useRouteData } from "solid-start";
@@ -6,10 +7,11 @@ import Footer from "~/components/Footer";
 import Header from "~/components/Header";
 import { Navigation, NavigationItem } from "~/components/Navigation";
 import Providers, { AppShellContent, AppShellFooter, AppShellHeader } from "~/layouts/Providers";
+import { authOptions } from "~/server/auth";
 import { prisma } from "~/server/db"
 
 export function routeData() {
-    return createServerData$(async () => {
+    return createServerData$(async (_, { request }) => {
         const topics = await prisma?.topic.findMany({
             where: {
                 course: { title: "Fizika" }
@@ -20,22 +22,24 @@ export function routeData() {
             orderBy: { year: "asc" },
         });
 
-        return topics;
-    })
+        const session = await getSession(request, authOptions);
+
+        return { topics, session };
+    }, { key: () => ["auth_user"] })
 }
 
 const Home: VoidComponent = () => {
-    const topics = useRouteData<typeof routeData>();
+    const data = useRouteData<typeof routeData>();
 
     return (
         <Providers>
             <AppShellHeader>
-                <Header />
+                <Header name={data()?.session?.user?.name} />
             </AppShellHeader>
             <AppShellContent>
-                <Show when={topics()}>
+                <Show when={data()?.topics}>
                     <Navigation>
-                        <For each={topics()}>{(topic) =>
+                        <For each={data()?.topics}>{(topic) =>
                             <NavigationItem
                                 text={topic.title}
                             />

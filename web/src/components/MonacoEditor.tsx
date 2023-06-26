@@ -4,8 +4,6 @@ import { createSignal } from "solid-js";
 import loader from '@monaco-editor/loader';
 import { createDropzone } from "@solid-primitives/upload";
 import type monaco from 'monaco-editor'
-import type { User } from "@prisma/client";
-import { marked } from "marked";
 
 /* const selection = editor().getPosition();
 
@@ -16,7 +14,6 @@ import { marked } from "marked";
     }]) */
 
 type MonacoEditorType = {
-    user?: User;
     active: boolean;
 };
 
@@ -74,12 +71,6 @@ const MonacoEditor: Component<MonacoEditorType> = (props) => {
         class="w-full h-screen"
     // class="w-screen h-screen"
     />
-}
-
-function wait(time: number) {
-    return new Promise(resolve => {
-        setTimeout(resolve, time);
-    });
 }
 
 export default MonacoEditor;
