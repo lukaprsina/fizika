@@ -44,6 +44,7 @@
     "@trpc/client": "^10.32.0",
     "@trpc/server": "^10.32.0",
     "dompurify": "^3.0.3",
+    "katex": "^0.16.8",
     "marked": "^5.1.0",
     "marked-gfm-heading-id": "^3.0.4",
     "mime-lite": "^1.0.3",

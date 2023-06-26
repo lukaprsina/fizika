@@ -2,6 +2,7 @@ import fs from 'fs';
 import { PrismaClient } from "@prisma/client";
 import path from 'path';
 
+const MAX_COURSES = 1;
 const prisma = new PrismaClient()
 
 async function main() {
@@ -115,7 +116,7 @@ async function main() {
         })
 
         let j = 0;
-        while (true) {
+        while (j < MAX_COURSES) {
             const exercise_dir = path.join(course_dir, `pages/page_${j}`)
             const exercise_file = path.join(exercise_dir, "index.html")
 

@@ -10,7 +10,7 @@ use uuid::Uuid;
 
 use crate::utils::get_only_element;
 
-/* TODO: gumbki na info
+/* TODO: gumbki za info
 math expressni
 za listi enter
  */
@@ -182,21 +182,40 @@ pub fn recurse_node(
                     href.remove(0);
                     // TODO
                     let uuid = Uuid::new_v4();
-                    let uuid_str = uuid.to_string();
                     popups.insert(href, uuid);
                 } else {
                     let text = node.inner_html();
                     let text = text.trim();
 
                     if !text.is_empty() {
-                        ignore_children = true;
                         contents.push_str(&format!("[{}]({})\n", text, href));
                     } else {
-                        println!("{}", node.html());
+                        panic!("{}", node.html());
                     }
                 }
+
+                ignore_children = true;
             }
             "caption" => {
+                ignore_children = true;
+            }
+            "script" => {
+                let display_mode = node.attr("type").unwrap();
+                let full = match display_mode {
+                    "math/tex; mode=display" => true,
+                    "math/tex" => false,
+                    _ => panic!("{}", display_mode),
+                };
+
+                node.children()
+                    .for_each(|child| assert!(child.name().is_none()));
+
+                contents.push_str(&format!(
+                    "<Equation{}>{}</Equation>\n",
+                    if full { " full " } else { "" },
+                    node.inner_html()
+                ));
+
                 ignore_children = true;
             }
             _ => {}
