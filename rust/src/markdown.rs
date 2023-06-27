@@ -207,10 +207,13 @@ pub fn recurse_node(
                 node.children()
                     .for_each(|child| assert!(child.name().is_none()));
 
+                let latex = node.inner_html();
+                // let latex = latex.replace("\\", "\\\\");
+
                 contents.push(format!(
-                    "<Equation{}>{}</Equation>\n",
-                    if full { " full " } else { "" },
-                    node.inner_html()
+                    "<Equation {}latex=\"{}\"/>\n",
+                    if full { "full " } else { "" },
+                    latex
                 ));
 
                 ignore_children = true;

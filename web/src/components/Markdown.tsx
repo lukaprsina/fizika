@@ -1,12 +1,13 @@
 import { compileSync, runSync } from "@mdx-js/mdx"
 import type { JSX, VoidComponent } from "solid-js";
-import { Match, Switch, createEffect, getOwner, runWithOwner } from "solid-js";
+import { Match, Switch, createEffect, getOwner, onMount, runWithOwner } from "solid-js";
 import { createComponent, createSignal, Show } from "solid-js";
 import * as jsx_runtime from 'solid-jsx'
+import katex from "katex"
+import "katex/dist/katex.min.css"
 
 // TODO: async import
 import { getType } from "mime-lite"
-import { Button } from "solid-headless";
 
 type MarkdownProps = {
     markdown?: string
@@ -38,13 +39,30 @@ const components = {
         </Switch >
     },
     Explain: (props: { prompt: string, children: JSX.Element }) => {
-        const [hidden, setHidden] = createSignal(true)
+        const [shown, setShown] = createSignal(false)
+        // TODO: več gumbov naemkrat premakne dol naslednje
         return <>
-            <button onClick={() => setHidden(!hidden())}>
+            <button onClick={() => setShown(!shown())}>
                 {props.prompt}
             </button>
-            <Show when={!hidden()}>{props.children}</Show>
+            <Show when={shown()}>{props.children}</Show>
         </>
+    },
+    Equation: (props: { latex: string, full?: boolean }) => {
+        let katex_ref: HTMLDivElement | undefined;
+
+        onMount(() => {
+            if (!katex_ref) return;
+
+            katex.render(props.latex, katex_ref, {
+                throwOnError: false,
+                displayMode: props.full
+            });
+        });
+
+        return <span
+            class="inline"
+            ref={katex_ref} />
     }
 }
 
@@ -65,7 +83,6 @@ const Markdown: VoidComponent<MarkdownProps> = (props) => {
         }))
 
         const Content = (runSync(code, jsx_runtime)).default;
-        // setContent(Content)
         runWithOwner(owner, () => {
             const component = createComponent(Content, {
                 components

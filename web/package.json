@@ -12,6 +12,7 @@
   "type": "module",
   "devDependencies": {
     "@types/dompurify": "^3.0.2",
+    "@types/katex": "^0.16.0",
     "@types/marked": "^5.0.0",
     "@types/node": "^20.3.1",
     "@typescript-eslint/eslint-plugin": "^5.60.0",

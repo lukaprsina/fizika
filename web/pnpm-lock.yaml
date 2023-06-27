@@ -106,6 +106,9 @@ devDependencies:
   '@types/dompurify':
     specifier: ^3.0.2
     version: 3.0.2
+  '@types/katex':
+    specifier: ^0.16.0
+    version: 0.16.0
   '@types/marked':
     specifier: ^5.0.0
     version: 5.0.0
@@ -2056,6 +2059,10 @@ packages:
 
   /@types/json-schema@7.0.12:
     resolution: {integrity: sha512-Hr5Jfhc9eYOQNPYO5WLDq/n4jqijdHNlDXjuAQkkt+mWdQR+XJToOHrsD4cPaMXpn6KO7y2+wM8AZEs8VpBLVA==}
+    dev: true
+
+  /@types/katex@0.16.0:
+    resolution: {integrity: sha512-hz+S3nV6Mym5xPbT9fnO8dDhBFQguMYpY0Ipxv06JMi1ORgnEM4M1ymWDUhUNer3ElLmT583opRo4RzxKmh9jw==}
     dev: true
 
   /@types/marked@5.0.0:
