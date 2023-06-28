@@ -11,6 +11,7 @@ use itertools::Itertools;
 use once_cell::sync::Lazy;
 use select::{document::Document, predicate};
 use serde::{Deserialize, Serialize};
+use tracing::info;
 
 use crate::{
     markdown::recurse_node,
@@ -266,7 +267,7 @@ fn parse_exercise2(exercise: Exercise, output_page_path: &Path, course_name: Str
 fn write_node_to_file(file: &mut File, area: select::node::Node, course_name: String) {
     let mut parents: Vec<Option<String>> = Vec::new();
     let mut question_mark_course = 0;
-    let mut contents: Vec<String> = Vec::new();
+    let mut contents: Vec<(String, bool)> = Vec::new();
 
     recurse_node(
         area,
@@ -277,14 +278,27 @@ fn write_node_to_file(file: &mut File, area: select::node::Node, course_name: St
     );
 
     let result = contents
-        .iter()
-        .map(|line| {
-            let mut trimmed = line.trim().to_string();
-            trimmed.push('\n');
-            trimmed
+        .into_iter()
+        .filter_map(|(line, newline)| {
+            let mut trimmed = line.trim_end().to_string();
+
+            // info!("{:#?} => {:#?}", line, trimmed);
+
+            if trimmed.is_empty() {
+                None
+            } else {
+                if newline {
+                    // trimmed.push('\n');
+                }
+
+                Some(trimmed)
+            }
         })
         .collect_vec()
         .concat();
+
+    /* info!("{:#?}", contents);
+    info!("{:#?}", result); */
 
     file.write(result.as_bytes())
         .expect(&format!("Can't write to file: {}", course_name));

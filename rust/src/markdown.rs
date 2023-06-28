@@ -5,7 +5,7 @@ use select::{
 };
 use tracing::{info, warn};
 
-use crate::utils::get_only_element;
+use crate::utils::{fix_formula, get_only_element};
 
 /* TODO: gumbki za info
 math expressni
@@ -16,7 +16,7 @@ pub fn recurse_node(
     node: Node,
     course_name: String,
     parents: &mut Vec<Option<String>>,
-    contents: &mut Vec<String>,
+    contents: &mut Vec<(String, bool)>,
     question_mark_course: &mut usize,
 ) {
     if node.is(Class("placeholder-for-subslides")) {
@@ -67,10 +67,9 @@ pub fn recurse_node(
 
                         // "![{}]({} \"{}\")",
                         if caption_children.is_empty() {
-                            contents.push(format!(
-                                "![{}]({})\n",
-                                node.attr("alt").unwrap_or_default(),
-                                &src,
+                            contents.push((
+                                format!("![{}]({})\n", node.attr("alt").unwrap_or_default(), &src,),
+                                true,
                             ));
                         } else {
                             let caption_child = get_only_element(caption_children);
@@ -81,7 +80,7 @@ pub fn recurse_node(
                                 }
                                 None => match caption_child.as_text() {
                                     Some(text) => {
-                                        contents.push(format!("![{}]({})\n", text, &src));
+                                        contents.push((format!("![{}]({})\n", text, &src), true));
                                     }
                                     None => {
                                         panic!("No text in caption");
@@ -124,7 +123,7 @@ pub fn recurse_node(
 
                             // TODO: course 38 page 8 fotoefekt link
                             info!("{}", p.html());
-                            contents.push(format!("![{}]({})\n", p.text(), href));
+                            contents.push((format!("![{}]({})\n", p.text(), href), true));
                             p.children().for_each(|child| {
                                 if !child.name().is_none() {
                                     warn!("LINK")
@@ -166,7 +165,7 @@ pub fn recurse_node(
                 }
 
                 if let Some(ordered) = ordered {
-                    contents.push(format!("\n{} ", ordered));
+                    contents.push((format!("\n{} ", ordered), true));
                 }
             }
             "a" => {
@@ -181,11 +180,14 @@ pub fn recurse_node(
                 if node.is(And(Class("goToSlide"), Class("explain"))) {
                     href.remove(0);
                     if !text.is_empty() {
-                        contents.push(format!("<Explain prompt=\"{}\">{}</Explain>", text, href));
+                        contents.push((
+                            format!("<Explain prompt=\"{}\">{}</Explain>", text, href),
+                            true,
+                        ));
                     }
                 } else {
                     if !text.is_empty() {
-                        contents.push(format!("[{}]({})\n", text, href));
+                        contents.push((format!("[{}]({})\n", text, href), true));
                     } else {
                         panic!("{}", node.html());
                     }
@@ -207,23 +209,50 @@ pub fn recurse_node(
                 node.children()
                     .for_each(|child| assert!(child.name().is_none()));
 
-                let latex = node.inner_html();
-                // let latex = latex.replace("\\", "\\\\");
+                let mut latex = node.inner_html();
+                fix_formula(&mut latex);
 
-                contents.push(format!(
-                    "<Equation {}latex=\"{}\"/>\n",
-                    if full { "full " } else { "" },
-                    latex
+                contents.push((
+                    format!(
+                        "<Equation {}latex=\"{}\"/>{}",
+                        if full { "full " } else { "" },
+                        latex,
+                        if full { "\n" } else { "" },
+                    ),
+                    full,
                 ));
 
                 ignore_children = true;
+            }
+            "i" => {
+                // TODO
+                ignore_children = true;
+
+                node.children().for_each(|child| {
+                    if !child.name().is_none() {
+                        warn!("I")
+                    }
+                });
+
+                contents.push((node.text(), false))
+            }
+            "b" => {
+                ignore_children = true;
+
+                node.children().for_each(|child| {
+                    if !child.name().is_none() {
+                        warn!("B")
+                    }
+                });
+
+                contents.push((node.text(), false))
             }
             _ => {}
         },
         None => {
             if !node.is(Comment) {
                 let html = node.html();
-                contents.push(html.trim().to_string());
+                contents.push((html, true));
             }
         }
     }

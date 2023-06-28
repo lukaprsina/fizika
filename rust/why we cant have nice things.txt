@@ -1,0 +1,14 @@
+Po zapisanih virih je polmer Zemlje prvi ocenil grški astronom Eratosten okoli leta 250
+        pred našim štetjem. Najprej je seveda moral ovreči splošno znano idejo, da je Zemlja plošča in razmišljati o
+        (takrat) revolucionarni ideji, da je Zemlja krogla.Opazil je, da v globokem vodnjaku v antičnem mestecu Syene (današnji Asuan v Egiptu)
+        vpadajo opoldnaski sončni žarki na prvi poletni dan natanko navpično, medtem ko ob istem času v<Equation latex="5000\,{ stadijev}"/> (<Equation latex="1\text{ stadij} \approx 160\text{ m}"/>)
+        oddaljenem mestu Aleksandrija žarki vpadajo pod kotom, ki znaša probližno<Equation latex="7°"/> glede na navpičnico. Sklepal je, da
+        mora biti ta razlika v naklonu sončnih žarkov posledica ukrivljenosti zemeljskega površja.
+        Predpostavil je da ima Zemlja obliko krogle in da je Sonce tako daleč stran od Zemlje, da lahko privzamemo da so
+        žarki svetlobe vzporedni.Celoten obseg Zemlje (krogle s polmerom<Equation latex="R"/>) ustreza kotu<Equation latex="360°"/>, lok s kotom<Equation latex="800\,{ km}"/> (oz.<Equation latex="5000\,{ stadijev}"/>) med mestoma
+                Syene in Aleksandrija pa kotu<Equation latex="7°"/>, zato velja:<Equation full latex="\frac{2 \pi R}{360}= \frac{s}{7}"/>iz česar lahko izpeljemo radij Zemlje:<Equation full latex="R=\frac{180 \cdot 800\,{ km}}{7\pi}=6500\,{ km}"/>Danes vemo, da polmer Zemlje znaša okoli<Equation latex="6370\,{ km}"/>. Eratosten je dobil
+        presenetljivo dober rezultat, glede na nezanesljivost meritev na kopnem in dejstvo, da se mesto Siene ne nahaja
+        točno na enakem poldnevniku kot Aleksandrija.<Explain prompt="Eratosten in matematika">
+Eratosten in matematikaEratostena matematiki pozanjo tudi kot izumitelja Eratostenovega sita, ki je preprost algoritem za iskanje praštevil, manjših od izbranega števila.Zanimive povezave:
+-[Eratostenovo sito za javo in C++](http://www.algolist.net/Algorithms/Number_theoretic/Sieve_of_Eratosthenes)[Zapri](#)
+</Explain>
