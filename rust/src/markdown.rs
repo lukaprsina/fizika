@@ -5,7 +5,10 @@ use select::{
 };
 use tracing::{info, warn};
 
-use crate::utils::{fix_formula, get_only_element};
+use crate::{
+    html2::ElementSpacing,
+    utils::{fix_formula, get_only_element},
+};
 
 /* TODO: gumbki za info
 math expressni
@@ -16,7 +19,7 @@ pub fn recurse_node(
     node: Node,
     course_name: String,
     parents: &mut Vec<Option<String>>,
-    contents: &mut Vec<(String, bool)>,
+    contents: &mut Vec<(String, ElementSpacing)>,
     question_mark_course: &mut usize,
 ) {
     if node.is(Class("placeholder-for-subslides")) {
@@ -68,8 +71,8 @@ pub fn recurse_node(
                         // "![{}]({} \"{}\")",
                         if caption_children.is_empty() {
                             contents.push((
-                                format!("![{}]({})\n", node.attr("alt").unwrap_or_default(), &src,),
-                                true,
+                                format!("![{}]({})\n", node.attr("alt").unwrap_or_default(), &src),
+                                ElementSpacing::Alone,
                             ));
                         } else {
                             let caption_child = get_only_element(caption_children);
@@ -80,7 +83,10 @@ pub fn recurse_node(
                                 }
                                 None => match caption_child.as_text() {
                                     Some(text) => {
-                                        contents.push((format!("![{}]({})\n", text, &src), true));
+                                        contents.push((
+                                            format!("![{}]({})\n", text, &src),
+                                            ElementSpacing::Alone,
+                                        ));
                                     }
                                     None => {
                                         panic!("No text in caption");
@@ -95,43 +101,56 @@ pub fn recurse_node(
                 let divs = node.find(predicate::Name("div")).collect_vec();
                 let ps = node.find(predicate::Name("p")).collect_vec();
 
-                if divs.len() == 1 && ps.len() == 1 {
+                if divs.len() == 1 && ps.len() <= 1 {
                     let div = get_only_element(divs);
-                    let p = get_only_element(ps);
 
-                    match div.attr("href") {
-                        Some(href) => {
-                            ignore_children = true;
+                    if let Some(href) = div.attr("href") {
+                        ignore_children = true;
 
-                            if !(href.ends_with(".mp4")
-                                || href.ends_with(".flv")
-                                || href.ends_with(".m4v"))
-                            {
-                                panic!("div href ends with: {}", href);
-                            }
-
-                            let mut url = url::Url::parse("http://fizika.sc-nm.si").unwrap();
-                            let split = course_name.split_once("/index.html");
-                            url = url
-                                .join(&format!("{}/", split.expect("No indexes??").0))
-                                .unwrap();
-
-                            let href = format!("{}{}", url.as_str(), href);
-
-                            let file_type = href.rsplit_once(".").unwrap().1;
-                            let video_type = &format!("video/{}", file_type);
-
-                            // TODO: course 38 page 8 fotoefekt link
-                            info!("{}", p.html());
-                            contents.push((format!("![{}]({})\n", p.text(), href), true));
-                            p.children().for_each(|child| {
-                                if !child.name().is_none() {
-                                    warn!("LINK")
-                                }
-                            });
+                        if !(href.ends_with(".mp4")
+                            || href.ends_with(".flv")
+                            || href.ends_with(".m4v"))
+                        {
+                            panic!("div href ends with: {}", href);
                         }
-                        None => {}
+
+                        let mut url = url::Url::parse("http://fizika.sc-nm.si").unwrap();
+                        let split = course_name.split_once("/index.html");
+                        url = url
+                            .join(&format!("{}/", split.expect("No indexes??").0))
+                            .unwrap();
+
+                        let href = format!("{}{}", url.as_str(), href);
+
+                        // let file_type = href.rsplit_once(".").unwrap().1;
+                        // let video_type = &format!("video/{}", file_type);
+
+                        // TODO: course 38 page 8 fotoefekt link
+                        let caption = match ps.len() {
+                            1 => {
+                                let p = get_only_element(ps);
+
+                                p.children().for_each(|child| {
+                                    if !child.name().is_none() {
+                                        warn!("LINK")
+                                    }
+                                });
+
+                                p.text()
+                            }
+                            0 => String::new(),
+                            _ => panic!("Too many ps"),
+                        };
+
+                        // info!("{}", p.html());
+                        contents
+                            .push((format!("![{}]({})\n", caption, href), ElementSpacing::Alone));
                     }
+                } else {
+                    // TODO
+                    // info!("{:#?}", divs);
+                    // info!("{:#?}", ps);
+                    info!("Too many ps")
                 }
             }
             "ul" | "ol" => {
@@ -165,7 +184,7 @@ pub fn recurse_node(
                 }
 
                 if let Some(ordered) = ordered {
-                    contents.push((format!("\n{} ", ordered), true));
+                    contents.push((format!("\n{} ", ordered), ElementSpacing::ListElement));
                 }
             }
             "a" => {
@@ -182,12 +201,12 @@ pub fn recurse_node(
                     if !text.is_empty() {
                         contents.push((
                             format!("<Explain prompt=\"{}\">{}</Explain>", text, href),
-                            true,
+                            ElementSpacing::NewlineBeforeAndAfter,
                         ));
                     }
                 } else {
                     if !text.is_empty() {
-                        contents.push((format!("[{}]({})\n", text, href), true));
+                        contents.push((format!("[{}]({})\n", text, href), ElementSpacing::Alone));
                     } else {
                         panic!("{}", node.html());
                     }
@@ -219,41 +238,52 @@ pub fn recurse_node(
                         latex,
                         if full { "\n" } else { "" },
                     ),
-                    full,
+                    if full {
+                        ElementSpacing::NewlineBeforeAndAfter
+                    } else {
+                        ElementSpacing::Inline
+                    },
                 ));
 
                 ignore_children = true;
             }
-            "i" => {
-                // TODO
+            "i" | "b" => {
                 ignore_children = true;
 
                 node.children().for_each(|child| {
                     if !child.name().is_none() {
-                        warn!("I")
+                        warn!("bold/italic")
                     }
                 });
 
-                contents.push((node.text(), false))
-            }
-            "b" => {
-                ignore_children = true;
+                let result = match name {
+                    "i" => format!("*{}*", node.text()),
+                    "b" => format!("**{}**", node.text()),
+                    _ => panic!(),
+                };
 
-                node.children().for_each(|child| {
-                    if !child.name().is_none() {
-                        warn!("B")
-                    }
-                });
-
-                contents.push((node.text(), false))
+                contents.push((result, ElementSpacing::Inline))
             }
             _ => {}
         },
         None => {
-            if !node.is(Comment) {
-                let html = node.html();
-                contents.push((html, true));
+            if node.is(Comment) {
+                return;
             }
+
+            /* let html = if !parents.contains(&Some("p".to_string()))
+                && !parents.contains(&Some("span".to_string()))
+            {
+                // info!("{:#?}", parents);
+                node.html().trim().to_string()
+            } else {
+                node.html()
+            }; */
+
+            contents.push((
+                node.html().trim().to_string(),
+                ElementSpacing::NewlineBeforeAndAfter,
+            ));
         }
     }
 

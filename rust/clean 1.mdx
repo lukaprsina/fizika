@@ -1,72 +1,4 @@
-import { compileSync, runSync } from "@mdx-js/mdx"
-import type { JSX, VoidComponent } from "solid-js";
-import { Match, Switch, createEffect, getOwner, onMount, runWithOwner } from "solid-js";
-import { createComponent, createSignal, Show } from "solid-js";
-import * as jsx_runtime from 'solid-jsx'
-import katex from "katex"
-import "katex/dist/katex.min.css"
-
-// TODO: async import
-import { getType } from "mime-lite"
-
-type MarkdownProps = {
-    markdown?: string
-};
-
-const components = {
-    img: (props: { src: string, alt: string }) => {
-        const [mimeType, setMimeType] = createSignal("");
-
-        createEffect(() => {
-            setMimeType(getType(props.src))
-        });
-
-        return <Switch fallback={<p>{props.alt}</p>}>
-            <Match when={mimeType().startsWith("image")}>
-                <figure>
-                    <img src={props.src} alt={props.alt} />
-                    <figcaption>{props.alt}</figcaption>
-                </figure>
-            </Match>
-            <Match when={mimeType().startsWith("video")}>
-                <figure>
-                    <video>
-                        <source src={props.src} />
-                    </video>
-                    <figcaption>{props.alt}</figcaption>
-                </figure>
-            </Match>
-        </Switch >
-    },
-    Explain: (props: { prompt: string, children: JSX.Element }) => {
-        const [shown, setShown] = createSignal(false)
-        // TODO: več gumbov naemkrat premakne dol naslednje
-        return <>
-            <button onClick={() => setShown(!shown())}>
-                {props.prompt}
-            </button>
-            <Show when={shown()}>{props.children}</Show>
-        </>
-    },
-    Equation: (props: { latex: string, full?: boolean }) => {
-        let katex_ref: HTMLDivElement | undefined;
-
-        onMount(() => {
-            if (!katex_ref) return;
-
-            katex.render(props.latex, katex_ref, {
-                throwOnError: false,
-                displayMode: props.full
-            });
-        });
-
-        return <span
-            class="inline"
-            ref={katex_ref} />
-    }
-}
-
-const text = `Astronomija kot znanost se je razvila predvsem iz praktičnih razlogov. Ljudje so opazili, da se določeni pojavi na nebu pojavljajo periodično, kar pomeni, da se po določenem času ponovijo. Na osnovi višine Sonca na nebu podnevi in spreminjanja podobe nočnega neba so nastale prve meritve časa.
+Astronomija kot znanost se je razvila predvsem iz praktičnih razlogov. Ljudje so opazili, da se določeni pojavi na nebu pojavljajo periodično, kar pomeni, da se po določenem času ponovijo. Na osnovi višine Sonca na nebu podnevi in spreminjanja podobe nočnega neba so nastale prve meritve časa.
 
 Stare civilizacije so opazovanje in položaje zvezd ter planetov uporabljale pri arkutekturi:
 
@@ -91,7 +23,6 @@ Kitajci so bili prvi, ki so zapisovali Sončeve mrke. Prvi je mrk 22. 10. 2137 p
 ## Dosežki babilonskih astronomov
 
 Babilonci so zapisali vse Sončeve mrke po letu 747 pr. n. št., odkrili so tudi periodo Sarosa, ki je odločilna za napovedovanje Sončevih mrkov (medsebojni položaji Zemlje, Lune in Sonca se ponovijo po 18 letih, 10 dneh in 8 urah, torej bo vsakemu mrku čez 18 let sledil naslednji). Za ponovitev mrka na skoraj istem kraju na Zemlji je treba počakati tri Sarosove periode.
-
 </Explain>
 
 <Explain prompt="Maji">
@@ -106,7 +37,6 @@ Maji so v Dresdenskem kodeksu opisali cikle Lune, vključno z napovedjo mrkov, i
 ## Dosežki starih Grkov
 
 Na podlagi opazovanj so ugotovili:
-
 - Zemlja je okrogla, ker ima Zemljina senca ob luninih mrkih okrogel obris (Aristotel, 330 pr.n.št.).
 - 280-260 let pred našim štetjem je filozof Aristarh trdil, da se Zemlja giblje okoli Sonca in da za celotno pot potrebuje 365 dni, ostale zvezde pa so (neskončno) daleč stran. Žal ni imel dovolj tehtnih dokazov in somišljenikov, tako da so se Grki vrnili k ideji o osrednjem mestu Zemlje v vesolju.
 - Eratosten (240 pr.n.št.) je določil razmerje med velikostjo Zemlje in Lune. Njegovi oceni obsega Zemlje znašata 39 690 km in 45 007 km (dejanski obseg Zemlje okrog Ekvatorja je približno 40 000 km). Skušal je uvesti leto z 365,25 dneva.
@@ -132,40 +62,3 @@ Pomembna je zlasti večja točnost neteleskopskih meritev. Primer je od 1429-144
 ![Kvadrant.](http://fizika.sc-nm.si/material-931-%20Astronomija/kvadrantbrahe.jpg)
 ![Kompas.](http://fizika.sc-nm.si/material-931-%20Astronomija/kompas.jpg)
 </Explain>
-`
-
-const Markdown: VoidComponent<MarkdownProps> = (props) => {
-    const [content, setContent] = createSignal<JSX.Element>();
-    const owner = getOwner();
-
-    createEffect(() => {
-        if (!owner || !props.markdown)
-            return;
-
-        console.log(props.markdown)
-
-        const code = String(compileSync(props.markdown, {
-            outputFormat: 'function-body',
-            jsxImportSource: 'solid-js',
-            providerImportSource: 'solid-jsx',
-        }))
-
-        const Content = (runSync(code, jsx_runtime)).default;
-        runWithOwner(owner, () => {
-            const component = createComponent(Content, {
-                components
-            })
-
-            setContent(component)
-        })
-
-    })
-
-    return <Show when={content}>
-        <div>
-            {content()}
-        </div>
-    </Show>
-}
-
-export default Markdown;

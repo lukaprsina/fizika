@@ -120,6 +120,9 @@ fn process_chapter(
     let mut j = 0;
 
     loop {
+        if i == 10 && j == 0 {
+            info!("a");
+        }
         if !read_pages_fs(&mut pages, &course_dir, j) {
             break;
         }
@@ -264,10 +267,30 @@ fn parse_exercise2(exercise: Exercise, output_page_path: &Path, course_name: Str
     Ok(())
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum ElementSpacing {
+    Inline,
+    NewlineBefore,
+    NewlineAfter,
+    NewlineBeforeAndAfter,
+    ListElement,
+    Alone,
+}
+
+/*
+text je NewlineBeforeAndAfter,
+bold, italic, equation, inline stvari so Inline in overridajo NewlineBeforeAndAfter
+Inline rabijo en space prej in potem
+<...> je NewlineBefore,
+</...> je NewlineAfter,
+![]() je Alone,
+List je NewlineAfter
+*/
+
 fn write_node_to_file(file: &mut File, area: select::node::Node, course_name: String) {
     let mut parents: Vec<Option<String>> = Vec::new();
     let mut question_mark_course = 0;
-    let mut contents: Vec<(String, bool)> = Vec::new();
+    let mut contents: Vec<(String, ElementSpacing)> = Vec::new();
 
     recurse_node(
         area,
@@ -277,31 +300,80 @@ fn write_node_to_file(file: &mut File, area: select::node::Node, course_name: St
         &mut question_mark_course,
     );
 
-    let result = contents
-        .into_iter()
-        .filter_map(|(line, newline)| {
-            let mut trimmed = line.trim_end().to_string();
-
-            // info!("{:#?} => {:#?}", line, trimmed);
-
-            if trimmed.is_empty() {
-                None
-            } else {
-                if newline {
-                    // trimmed.push('\n');
-                }
-
-                Some(trimmed)
-            }
-        })
-        .collect_vec()
-        .concat();
+    let result = contents_to_string(contents);
 
     /* info!("{:#?}", contents);
     info!("{:#?}", result); */
 
     file.write(result.as_bytes())
         .expect(&format!("Can't write to file: {}", course_name));
+}
+
+fn contents_to_string(contents: Vec<(String, ElementSpacing)>) -> String {
+    use ElementSpacing::*;
+
+    let filtered_list = contents
+        .clone()
+        .into_iter()
+        .filter_map(|line| {
+            let trimmed = line.0.trim().to_string();
+            let trimmed = trimmed
+                .chars()
+                .coalesce(|a, b| {
+                    if a.is_whitespace() && b.is_whitespace() {
+                        Ok(' ')
+                    } else {
+                        Err((a, b))
+                    }
+                })
+                .collect::<String>();
+
+            if trimmed.is_empty() {
+                None
+            } else {
+                Some((trimmed, line.1))
+            }
+        })
+        .collect_vec();
+
+    let mut index = 1;
+    if filtered_list.is_empty() {
+        info!("{:#?}", contents);
+    }
+
+    let mut result = filtered_list[0].0.clone();
+
+    while index < filtered_list.len() {
+        let previous = &filtered_list[index - 1];
+        let current = &filtered_list[index];
+
+        let (newline_num, space) = match (previous.1, current.1) {
+            (_, Inline) => (0, true),
+            (Inline, _) => (0, true),
+            (NewlineBeforeAndAfter, _) => (2, false),
+            (NewlineAfter, _) => (2, false),
+            (_, ListElement) => (1, false),
+            (ListElement, _) => (0, true),
+            (_, NewlineBeforeAndAfter) => (2, false),
+            (_, NewlineBefore) => (2, false),
+            (Alone, _) => (1, false),
+            (_, Alone) => (1, false),
+            _ => (0, false),
+        };
+
+        result.push_str(&"\n".repeat(newline_num));
+        if space {
+            result.push(' ');
+        }
+        result.push_str(&current.0);
+
+        index += 1;
+    }
+
+    // info!("{:#?}", filtered_list);
+    // info!("\n{}", result);
+
+    result.trim().to_string()
 }
 
 fn write_config(
