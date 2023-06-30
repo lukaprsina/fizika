@@ -120,9 +120,6 @@ fn process_chapter(
     let mut j = 0;
 
     loop {
-        if i == 10 && j == 0 {
-            info!("a");
-        }
         if !read_pages_fs(&mut pages, &course_dir, j) {
             break;
         }
@@ -339,6 +336,7 @@ fn contents_to_string(contents: Vec<(String, ElementSpacing)>) -> String {
     let mut index = 1;
     if filtered_list.is_empty() {
         info!("{:#?}", contents);
+        panic!("NO content");
     }
 
     let mut result = filtered_list[0].0.clone();

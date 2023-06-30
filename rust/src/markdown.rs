@@ -10,11 +10,6 @@ use crate::{
     utils::{fix_formula, get_only_element},
 };
 
-/* TODO: gumbki za info
-math expressni
-za listi enter
- */
-
 pub fn recurse_node(
     node: Node,
     course_name: String,
@@ -36,121 +31,89 @@ pub fn recurse_node(
                     .find(And(Class("imageCaption"), Name("caption")))
                     .collect_vec();
 
-                if imgs.len() != 0 || captions.len() != 0 {
-                    if imgs.len() == 1 && captions.len() == 1 {
+                match (imgs.len(), captions.len()) {
+                    (1, _) => {
                         if node.attr("href").is_some() {
                             panic!("Img and video in the same td")
                         }
 
                         // image
                         let img = get_only_element(imgs);
-                        let caption = get_only_element(captions);
-
                         let mut src = img.attr("src").unwrap().to_string();
 
-                        let mut url = url::Url::parse("http://fizika.sc-nm.si").unwrap();
-                        let split = course_name.split_once("/index.html");
-                        url = url
-                            .join(&format!("{}/", split.expect("No indexes??").0))
-                            .unwrap();
-
-                        src.insert_str(0, url.as_str());
-
-                        // caption
-                        if !caption.is(Class("imageCaption")) {
-                            panic!("caption is not imageCaption: {:#?}", parents);
-                        }
-                        let temp = caption.children().collect_vec();
-                        let mut caption_children = vec![];
-                        for x in temp {
-                            if !x.html().trim().is_empty() {
-                                caption_children.push(x);
-                            }
-                        }
-
-                        // "![{}]({} \"{}\")",
-                        if caption_children.is_empty() {
-                            contents.push((
-                                format!("![{}]({})\n", node.attr("alt").unwrap_or_default(), &src),
-                                ElementSpacing::Alone,
-                            ));
-                        } else {
-                            let caption_child = get_only_element(caption_children);
-                            match caption_child.name() {
-                                Some(name) => {
-                                    // TODO
-                                    // println!("Tag caption, {}", name);
-                                }
-                                None => match caption_child.as_text() {
-                                    Some(text) => {
-                                        contents.push((
-                                            format!("![{}]({})\n", text, &src),
-                                            ElementSpacing::Alone,
-                                        ));
+                        let caption = match captions.len() {
+                            1 => {
+                                let caption = get_only_element(captions);
+                                caption.children().for_each(|child| {
+                                    if !child.name().is_none() {
+                                        // info!("{:#?}", caption.html());
+                                        warn!("IMAGE CAPTION")
                                     }
-                                    None => {
-                                        panic!("No text in caption");
-                                    }
-                                },
+                                });
+
+                                caption.text()
                             }
-                        }
+                            0 => node.attr("alt").unwrap_or_default().to_string(),
+                            _ => {
+                                panic!();
+                            }
+                        };
+
+                        contents
+                            .push((format!("![{}]({})\n", caption, &src), ElementSpacing::Alone));
                     }
+                    (0, _) => (),
+                    (_, _) => panic!("Too many images"),
                 }
 
                 // video
                 let divs = node.find(predicate::Name("div")).collect_vec();
                 let ps = node.find(predicate::Name("p")).collect_vec();
 
-                if divs.len() == 1 && ps.len() <= 1 {
-                    let div = get_only_element(divs);
+                match divs.len() {
+                    1 => {
+                        let div = get_only_element(divs);
+                        if let Some(href) = div.attr("href") {
+                            ignore_children = true;
 
-                    if let Some(href) = div.attr("href") {
-                        ignore_children = true;
-
-                        if !(href.ends_with(".mp4")
-                            || href.ends_with(".flv")
-                            || href.ends_with(".m4v"))
-                        {
-                            panic!("div href ends with: {}", href);
-                        }
-
-                        let mut url = url::Url::parse("http://fizika.sc-nm.si").unwrap();
-                        let split = course_name.split_once("/index.html");
-                        url = url
-                            .join(&format!("{}/", split.expect("No indexes??").0))
-                            .unwrap();
-
-                        let href = format!("{}{}", url.as_str(), href);
-
-                        // let file_type = href.rsplit_once(".").unwrap().1;
-                        // let video_type = &format!("video/{}", file_type);
-
-                        // TODO: course 38 page 8 fotoefekt link
-                        let caption = match ps.len() {
-                            1 => {
-                                let p = get_only_element(ps);
-
-                                p.children().for_each(|child| {
-                                    if !child.name().is_none() {
-                                        warn!("LINK")
-                                    }
-                                });
-
-                                p.text()
+                            if !(href.ends_with(".mp4")
+                                || href.ends_with(".flv")
+                                || href.ends_with(".m4v"))
+                            {
+                                panic!("div href ends with: {}", href);
                             }
-                            0 => String::new(),
-                            _ => panic!("Too many ps"),
-                        };
 
-                        // info!("{}", p.html());
-                        contents
-                            .push((format!("![{}]({})\n", caption, href), ElementSpacing::Alone));
+                            let caption = match ps.len() {
+                                1 => {
+                                    let p = get_only_element(ps);
+
+                                    p.children().for_each(|child| {
+                                        if !child.name().is_none() {
+                                            warn!("VIDEO CAPTION")
+                                        }
+                                    });
+
+                                    p.text()
+                                }
+                                0 => String::new(),
+                                _ => {
+                                    // info!("{:#?}", ps);
+                                    warn!("Too many ps");
+                                    String::new()
+                                }
+                            };
+
+                            contents.push((
+                                format!("![{}]({})\n", caption, href),
+                                ElementSpacing::Alone,
+                            ));
+                        } else {
+                            warn!("NO HREF");
+                            // panic!("No href");
+                        }
                     }
-                } else {
-                    // TODO
-                    // info!("{:#?}", divs);
-                    // info!("{:#?}", ps);
-                    info!("Too many ps")
+                    0 => (),
+                    _ => panic!("Multiple videos"),
                 }
             }
             "ul" | "ol" => {
@@ -311,3 +274,71 @@ pub fn recurse_node(
 
 pub static mut ALT_COUNTER: i32 = 0;
 pub static mut QUESTION_MARK_COUNTER: i32 = 0;
+
+// caption
+/* if !caption.is(Class("imageCaption")) {
+    panic!("caption is not imageCaption: {:#?}", parents);
+}
+let temp = caption.children().collect_vec();
+let mut caption_children = vec![];
+for x in temp {
+    if !x.html().trim().is_empty() {
+        caption_children.push(x);
+    }
+}
+
+// "![{}]({} \"{}\")",
+if caption_children.is_empty() {
+    contents.push((
+        format!(
+            "![{}]({})\n",
+            node.attr("alt").unwrap_or_default(),
+            &src
+        ),
+        ElementSpacing::Alone,
+    ));
+} else {
+    let caption_child = get_only_element(caption_children);
+    match caption_child.name() {
+        Some(name) => {
+            // TODO
+            // println!("Tag caption, {}", name);
+        }
+        None => match caption_child.as_text() {
+            Some(text) => {
+                contents.push((
+                    format!("![{}]({})\n", text, &src),
+                    ElementSpacing::Alone,
+                ));
+            }
+            None => {
+                panic!("No text in caption");
+            }
+        },
+    }
+} */
+
+// video
+/* if let Some(href) = div.attr("href") {
+ignore_children = true;
+
+if !(href.ends_with(".mp4")
+    || href.ends_with(".flv")
+    || href.ends_with(".m4v"))
+{
+    panic!("div href ends with: {}", href);
+}
+
+let mut url = url::Url::parse("http://fizika.sc-nm.si").unwrap();
+let split = course_name.split_once("/index.html");
+url = url
+    .join(&format!("{}/", split.expect("No indexes??").0))
+    .unwrap();
+
+let href = format!("{}{}", url.as_str(), href);
+
+// let file_type = href.rsplit_once(".").unwrap().1;
+// let video_type = &format!("video/{}", file_type);
+
+// TODO: course 38 page 8 fotoefekt link
+}; */
