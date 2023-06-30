@@ -3,11 +3,12 @@ use select::{
     node::Node,
     predicate::{self, And, Class, Comment, Name},
 };
-use tracing::{info, warn};
+use tracing::warn;
 
 use crate::{
+    copy_gradivo::{copy_gradivo, GradivoType},
     html2::ElementSpacing,
-    utils::{fix_formula, get_only_element},
+    utils::{fix_formula, get_only_element, ChapterInfo},
 };
 
 pub fn recurse_node(
@@ -16,6 +17,7 @@ pub fn recurse_node(
     parents: &mut Vec<Option<String>>,
     contents: &mut Vec<(String, ElementSpacing)>,
     question_mark_course: &mut usize,
+    chapter_infos: &Vec<ChapterInfo>,
 ) {
     if node.is(Class("placeholder-for-subslides")) {
         return;
@@ -39,7 +41,10 @@ pub fn recurse_node(
 
                         // image
                         let img = get_only_element(imgs);
-                        let mut src = img.attr("src").unwrap().to_string();
+                        let src = img.attr("src").unwrap().to_string();
+
+                        let new_src =
+                            copy_gradivo(&src, &course_name, chapter_infos, GradivoType::Image);
 
                         let caption = match captions.len() {
                             1 => {
@@ -59,8 +64,10 @@ pub fn recurse_node(
                             }
                         };
 
-                        contents
-                            .push((format!("![{}]({})\n", caption, &src), ElementSpacing::Alone));
+                        contents.push((
+                            format!("![{}]({})\n", caption, new_src),
+                            ElementSpacing::Alone,
+                        ));
                     }
                     (0, _) => (),
                     (_, _) => panic!("Too many images"),
@@ -75,6 +82,13 @@ pub fn recurse_node(
                         let div = get_only_element(divs);
                         if let Some(href) = div.attr("href") {
                             ignore_children = true;
+
+                            let new_href = copy_gradivo(
+                                &href,
+                                &course_name,
+                                chapter_infos,
+                                GradivoType::Video,
+                            );
 
                             if !(href.ends_with(".mp4")
                                 || href.ends_with(".flv")
@@ -104,7 +118,7 @@ pub fn recurse_node(
                             };
 
                             contents.push((
-                                format!("![{}]({})\n", caption, href),
+                                format!("![{}]({})\n", caption, new_href),
                                 ElementSpacing::Alone,
                             ));
                         } else {
@@ -267,6 +281,7 @@ pub fn recurse_node(
                 &mut new_parents,
                 contents,
                 question_mark_course,
+                chapter_infos,
             );
         }
     }

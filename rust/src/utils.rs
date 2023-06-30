@@ -99,7 +99,7 @@ pub fn get_not_span(x: &Node) -> String {
     result
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, Default)]
 pub struct ChapterInfo {
     pub heading: String,
     pub author: Option<String>,

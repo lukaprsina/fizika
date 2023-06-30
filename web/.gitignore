@@ -23,3 +23,5 @@ gitignore
 Thumbs.db
 
 .env
+public/gradivo_out/
+public/gradivo/

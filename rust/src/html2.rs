@@ -58,7 +58,7 @@ pub fn to_markdown() -> Result<()> {
         fs::remove_dir_all(&output_dir)?;
     }
 
-    let mut chapter_info_json = {
+    let mut chapter_infos = {
         let chapter_info_path = Path::new("chapter_infos.json");
         let chapter_info_string = fs::read_to_string(chapter_info_path)?;
         serde_json::from_str::<Vec<ChapterInfo>>(&chapter_info_string)?
@@ -72,7 +72,7 @@ pub fn to_markdown() -> Result<()> {
             continue;
         }
 
-        if !process_chapter(i, courses_dir, output_dir, &mut chapter_info_json)? {
+        if !process_chapter(i, courses_dir, output_dir, &mut chapter_infos)? {
             break;
         }
 
@@ -92,7 +92,7 @@ fn process_chapter(
     i: usize,
     courses_dir: &Path,
     output_dir: &Path,
-    chapter_info_json: &mut Vec<ChapterInfo>,
+    chapter_infos: &mut Vec<ChapterInfo>,
 ) -> Result<bool> {
     let course_dir = courses_dir.join(i.to_string());
     let course_output_dir = output_dir.join(i.to_string());
@@ -114,7 +114,7 @@ fn process_chapter(
     )?;
 
     let config_path = course_output_dir.join("config.json");
-    write_config(chapter_info_json, &config_path, i)?;
+    write_config(chapter_infos, &config_path, i)?;
 
     let mut pages: HashMap<String, (Document, PathBuf, usize)> = HashMap::new();
     let mut j = 0;
@@ -199,19 +199,29 @@ fn process_chapter(
         }
     }
 
-    let course_name = chapter_info_json[i].original_name.clone().unwrap();
+    let course_name = chapter_infos[i].original_name.clone().unwrap();
 
     for (page_num, exercise) in exercises.into_iter().enumerate() {
         let output_page_dir = course_output_dir.join("pages");
         let output_page_path = output_page_dir.join(format!("page_{}", page_num));
         fs::create_dir_all(&output_page_path)?;
-        parse_exercise2(exercise, &output_page_path, course_name.clone())?;
+        parse_exercise2(
+            exercise,
+            &output_page_path,
+            course_name.clone(),
+            chapter_infos,
+        )?;
     }
 
     Ok(true)
 }
 
-fn parse_exercise2(exercise: Exercise, output_page_path: &Path, course_name: String) -> Result<()> {
+fn parse_exercise2(
+    exercise: Exercise,
+    output_page_path: &Path,
+    course_name: String,
+    chapter_infos: &Vec<ChapterInfo>,
+) -> Result<()> {
     match process_exercise(&exercise.document) {
         Ok(result) => {
             if let Some((area, subheading)) = result {
@@ -231,7 +241,7 @@ fn parse_exercise2(exercise: Exercise, output_page_path: &Path, course_name: Str
                     }
                 }
 
-                write_node_to_file(&mut index_file, area, course_name.clone());
+                write_node_to_file(&mut index_file, area, course_name.clone(), chapter_infos);
             }
         }
         Err(err) => {
@@ -258,7 +268,7 @@ fn parse_exercise2(exercise: Exercise, output_page_path: &Path, course_name: Str
             }
         }
 
-        write_node_to_file(&mut file, area, course_name.clone());
+        write_node_to_file(&mut file, area, course_name.clone(), chapter_infos);
     }
 
     Ok(())
@@ -284,7 +294,12 @@ Inline rabijo en space prej in potem
 List je NewlineAfter
 */
 
-fn write_node_to_file(file: &mut File, area: select::node::Node, course_name: String) {
+fn write_node_to_file(
+    file: &mut File,
+    area: select::node::Node,
+    course_name: String,
+    chapter_infos: &Vec<ChapterInfo>,
+) {
     let mut parents: Vec<Option<String>> = Vec::new();
     let mut question_mark_course = 0;
     let mut contents: Vec<(String, ElementSpacing)> = Vec::new();
@@ -295,6 +310,7 @@ fn write_node_to_file(file: &mut File, area: select::node::Node, course_name: St
         &mut parents,
         &mut contents,
         &mut question_mark_course,
+        chapter_infos,
     );
 
     let result = contents_to_string(contents);
