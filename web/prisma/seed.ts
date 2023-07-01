@@ -2,7 +2,7 @@ import fs from 'fs';
 import { PrismaClient } from "@prisma/client";
 import path from 'path';
 
-const LIMIT_COURSES = 1;
+const LIMIT_COURSES = 99;
 const prisma = new PrismaClient()
 
 async function main() {

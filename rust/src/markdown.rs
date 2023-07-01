@@ -11,6 +11,8 @@ use crate::{
     utils::{fix_formula, get_only_element, ChapterInfo},
 };
 
+// TODO: escape {}, \ in equations
+
 pub fn recurse_node(
     node: Node,
     course_name: String,
