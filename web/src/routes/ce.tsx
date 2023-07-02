@@ -1,10 +1,13 @@
-import type { ParentComponent } from "solid-js";
-import { Accessor, createContext, createEffect, createSignal, Match, Switch, useContext, type VoidComponent } from "solid-js"
-import { ComputeEngine, IdTable, SymbolDefinition } from "@cortex-js/compute-engine"
+import type { ParentComponent, Accessor } from "solid-js";
+import { createContext, createEffect, createSignal, useContext, type VoidComponent } from "solid-js"
+import type { IdTable, SymbolDefinition } from "@cortex-js/compute-engine";
+import { ComputeEngine } from "@cortex-js/compute-engine"
+import { renderMathInElement } from "mathlive"
+import "mathlive/static.css"
 
 const ce = new ComputeEngine();
 
-const MathContext = createContext<Accessor<Variables>>();
+const MathContext = createContext<[Accessor<Variables>, { get_render_function: (func: () => void) => void }]>();
 
 export function useMathSystem() { return useContext(MathContext); }
 
@@ -16,33 +19,28 @@ type SystemProps = {
 
 const System: ParentComponent<SystemProps> = (props) => {
     const [variables, setVariables] = createSignal<Variables>({});
+    const render_funcs: (() => void)[] = [];
 
-    createEffect(() => setVariables(props.variables))
-
-    return <MathContext.Provider value={variables}>{props.children}</MathContext.Provider>
-}
-
-type EquationProps = {
-    latex?: string;
-    name?: string;
-    calculate?: boolean;
-};
-
-const Equation: VoidComponent<EquationProps> = (props) => {
-    const system = useMathSystem();
-
-    if (!system) {
-        throw "Math system doesn't exist"
-    }
+    const system: [Accessor<Variables>, { get_render_function: (func: () => void) => void }] = [
+        variables,
+        {
+            get_render_function: (func) => {
+                render_funcs.push(func);
+            }
+        }
+    ]
 
     createEffect(() => {
-        const scope: IdTable = {};
+        if (render_funcs.length == 0) return;
 
-        for (const variable in system()) {
+        const scope: IdTable = {};
+        const vars = variables()
+
+        for (const variable in vars) {
             let value;
 
-            if (system().hasOwnProperty(variable)) {
-                const constraints = system()[variable];
+            if (vars.hasOwnProperty(variable)) {
+                const constraints = vars[variable];
 
                 if (typeof constraints["exact"] == "number") {
                     const exact = constraints["exact"]
@@ -60,41 +58,77 @@ const Equation: VoidComponent<EquationProps> = (props) => {
             }
 
             if (typeof value == "number") {
-                scope[variable] = ce.parse(`${value}`);
+                scope[variable] = value as SymbolDefinition
             }
         }
 
         ce.pushScope(scope);
+
+        for (const render_func of render_funcs) {
+            render_func()
+        }
+
+        setVariables(vars)
+        ce.popScope();
+    })
+
+    return <MathContext.Provider value={system}>{props.children}</MathContext.Provider>
+}
+
+type EquationProps = {
+    latex?: string;
+    name?: string;
+    full?: boolean;
+    calculate?: boolean;
+};
+
+const Equation: VoidComponent<EquationProps> = (props) => {
+    const system = useMathSystem();
+    let elem: HTMLSpanElement;
+
+    if (!system) {
+        throw "Math system doesn't exist"
+    }
+
+    const [variables, { get_render_function }] = system;
+
+    const render = (latex: string) => {
+        // katex.render(latex, elem, { displayMode: props.full })
+        // ** Default **: `{display: [ ['$$', '$$'], ['\\[', '\\]'] ] ], inline: [ ['\\(','\\)'] ] ]}`
+        if (props.full)
+            elem.innerHTML = `\$\$${latex}\$\$`;
+        else
+            elem.innerHTML = `\\begin{math}${latex}\\end{math}`;
+
+        renderMathInElement(elem)
+    }
+
+    createEffect(() => {
+        console.log(props.latex, props.calculate)
+
+        const a = () => {
+            if (!props.latex) return;
+
+            if (!props.calculate) {
+                render(props.latex)
+                return;
+            }
+
+            const expression = ce.parse(props.latex);
+            const solved = expression.evaluate();
+            render(solved.latex)
+        };
+
+        get_render_function(a)
     })
 
     return (
-        <Switch>
-            <Match
-                when={props.calculate && props.latex}
-            >
-                <p>Calculate {props.latex}</p>
-            </Match>
-            <Match
-                when={!props.calculate}
-            >
-                <p>Show {props.latex}</p>
-            </Match>
-        </Switch>
+        <span ref={elem} />
     )
 }
 
+// TODO: names and move variable calculation to the System
 const MathDemo: VoidComponent = () => {
-    /* createEffect(() => {
-        ce.pushScope({
-            r: 1000,
-            F: 200,
-        });
-
-        const expr = ce.parse("r+F");
-        const expr2 = ce.parse(`2*${expr.evaluate().numericValue}`)
-        // console.log(expr2.evaluate().numericValue)
-    }) */
-
     return <>
         <System variables={
             {
@@ -102,9 +136,17 @@ const MathDemo: VoidComponent = () => {
                 "F": { low: 150, high: 160 }
             }
         }>
-            <Equation latex="r+F" />
-            is
-            <Equation latex="r+F" calculate />
+            <p>
+                <Equation latex="r" />
+                {' '}is{' '}
+                <Equation latex="r" calculate />,{' '}
+                <Equation latex="F" />
+                {' '}is{' '}
+                <Equation latex="F" calculate />,{' '}
+                <Equation latex="r+F" />
+                {' '}is{' '}
+                <Equation latex="r+F" calculate />
+            </p>
         </System >
         <System variables={
             {
@@ -112,7 +154,9 @@ const MathDemo: VoidComponent = () => {
                 "F": { low: 250, high: 260 }
             }
         }>
-            <Equation latex="r+F" />
+            <p>
+                <Equation latex="\frac{\pi}{2}" full />
+            </p>
         </System>
     </>
 }

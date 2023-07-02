@@ -7,6 +7,7 @@ netlify
 
 # dependencies
 /node_modules
+/public/node_modules
 
 # IDEs and editors
 /.idea
