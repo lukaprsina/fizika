@@ -56,12 +56,18 @@ dependencies:
   '@trpc/server':
     specifier: ^10.33.0
     version: 10.33.0
+  '@use-gesture/vanilla':
+    specifier: ^10.2.27
+    version: 10.2.27
   dompurify:
     specifier: ^3.0.4
     version: 3.0.4
   katex:
     specifier: ^0.16.8
     version: 0.16.8
+  lodash-move:
+    specifier: ^1.1.1
+    version: 1.1.1
   marked:
     specifier: ^5.1.0
     version: 5.1.0
@@ -2358,6 +2364,12 @@ packages:
     resolution: {integrity: sha512-V4XV7hn9GAD2MYu8yBBVi5iuWBsAMfjPRMsEVzoTNGYH72tf0kFP+OKqGKc8YJFQIJx6yj+AOqxmEHOmx2/MEA==}
     dev: false
 
+  /@use-gesture/vanilla@10.2.27:
+    resolution: {integrity: sha512-K/9bpGgEm5mqFsWmMCEIJyBhJ/cgC52oRgQTsM+JTxNGe5Vz9mvecH9MaSuyItXRlvOy2nbJqaK+h/TGRbparA==}
+    dependencies:
+      '@use-gesture/core': 10.2.27
+    dev: false
+
   /accepts@1.3.8:
     resolution: {integrity: sha512-PYAthTa2m2VKxuvSD3DPC/Gy+U+sOA1LAuT8mkmRuvw+NACSaeXEQ+NHcVF7rONl6qcaxV3Uuemwawk+7+SJLw==}
     engines: {node: '>= 0.6'}
@@ -3985,6 +3997,12 @@ packages:
     dependencies:
       p-locate: 5.0.0
     dev: true
+
+  /lodash-move@1.1.1:
+    resolution: {integrity: sha512-Gm8/lC16NXv2tweIiX7pYhgAQdoSwXzO/WsSmNX/un8rBQUIC7YkauFK2Sdt4NBqWV28BW25P8eDkHWPt91YqQ==}
+    dependencies:
+      lodash: 4.17.21
+    dev: false
 
   /lodash.debounce@4.0.8:
     resolution: {integrity: sha512-FT1yDzDYEoYWhnSGnpE/4Kj1fLZkDFyqRb7fNt6FdYOSxlUWAtp42Eh6Wb0rGIv/m9Bgo7x4GhQbm5Ys4SG5ow==}
