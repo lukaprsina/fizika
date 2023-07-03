@@ -1,11 +1,11 @@
 import { getSession } from "@solid-auth/base";
 import type { VoidComponent } from "solid-js";
-import { For, Show } from "solid-js";
+import { For, Show, createEffect, createSignal } from "solid-js";
 import { useRouteData } from "solid-start";
 import { createServerData$ } from "solid-start/server";
 import Footer from "~/components/Footer";
 import Header from "~/components/Header";
-import { Navigation, NavigationItem } from "~/components/Navigation";
+import { Navigation, NavigationItem, NavigationItemType } from "~/components/Navigation";
 import Providers, { AppShellContent, AppShellFooter, AppShellHeader } from "~/layouts/Providers";
 import { authOptions } from "~/server/auth";
 import { prisma } from "~/server/db"
@@ -37,16 +37,14 @@ const Home: VoidComponent = () => {
                 <Header name={data()?.session?.user?.name} />
             </AppShellHeader>
             <AppShellContent>
-                <Show when={data()?.topics}>
-                    <Navigation>
-                        <For each={data()?.topics}>{(topic) =>
-                            <NavigationItem
-                                text={topic.title}
-                            />
-                        }
-                        </For>
-                    </Navigation>
-                </Show>
+                <Navigation>
+                    <For each={data()?.topics}>{(topic) =>
+                        <NavigationItem
+                            text={topic.title}
+                        />
+                    }
+                    </For>
+                </Navigation>
             </AppShellContent>
             <AppShellFooter>
                 <Footer />

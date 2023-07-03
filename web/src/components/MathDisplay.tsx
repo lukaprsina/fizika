@@ -97,7 +97,7 @@ export const Equation: VoidComponent<EquationProps> = (props) => {
         throw "Math system doesn't exist"
     }
 
-    const [, { add_render_function: add_render_function }] = system;
+    const [variables, { add_render_function: add_render_function }] = system;
 
     createEffect(() => {
         const render = (latex: string) => {
@@ -114,16 +114,31 @@ export const Equation: VoidComponent<EquationProps> = (props) => {
         }
 
         const a = () => {
-            if (!props.latex) return;
+            if (props.latex) {
+                if (props.calculate) {
+                    const expression = compute_engine.parse(props.latex);
+                    const solved = expression.evaluate();
+                    render(solved.latex)
+                } else {
+                    render(props.latex)
+                    return;
+                }
+            } else {
+                if (!props.name) return;
 
-            if (!props.calculate) {
-                render(props.latex)
-                return;
+                if (props.calculate) {
+                    for (const variable in variables()) {
+                        if (variable == props.name) {
+                            // found the value to display
+                            const value = variables()[variable].exact;
+                            if (value)
+                                render(value.toString());
+                        }
+                    }
+                } else {
+                    throw new Error("No latex, no calculate, but name")
+                }
             }
-
-            const expression = compute_engine.parse(props.latex);
-            const solved = expression.evaluate();
-            render(solved.latex)
         };
 
         setRenderFunction({ render_func: a });

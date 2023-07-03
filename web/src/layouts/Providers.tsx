@@ -89,7 +89,7 @@ const Providers: ParentComponent = (props) => {
         api: cookieStorage,
         prefix: "fizika-scnm",
         options: {
-            sameSite: "Lax",
+            sameSite: "Strict",
         }
     })
 
