@@ -6,7 +6,7 @@ import { renderMathInElement } from "mathlive"
 import { createStore } from "solid-js/store";
 import "mathlive/static.css"
 
-const ce = new ComputeEngine();
+export const compute_engine = new ComputeEngine();
 type RenderFuncType = {
     render_func: () => void;
 }
@@ -61,13 +61,13 @@ export const System: ParentComponent<SystemProps> = (props) => {
             }
         }
 
-        ce.pushScope(scope);
+        compute_engine.pushScope(scope);
         for (const { render_func } of renderFuncs) {
             render_func()
         }
 
         setVariables(vars)
-        ce.popScope();
+        compute_engine.popScope();
     })
 
     return <MathContext.Provider value={[
@@ -121,7 +121,7 @@ export const Equation: VoidComponent<EquationProps> = (props) => {
                 return;
             }
 
-            const expression = ce.parse(props.latex);
+            const expression = compute_engine.parse(props.latex);
             const solved = expression.evaluate();
             render(solved.latex)
         };
