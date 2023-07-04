@@ -6,8 +6,6 @@ import { createSpring, animated } from 'solid-spring'
 import { useDrag } from 'solid-gesture'
 import { createContext } from "solid-js";
 
-const AnimatedLink = animated(A)
-
 export type NavType = {
     text: string;
     href?: string;
@@ -21,7 +19,12 @@ type NavAnimation = {
     scale: number;
 }
 
-const NavigationContext = createContext<{ add_navigation_title: (title: NavType) => void; }>();
+const NavigationContext = createContext<{
+    add_navigation_title: (nav: NavType) => void,
+    update_navigation_title: (nav: NavType) => void,
+    delete_title: (owner: Owner) => void
+}>();
+
 export function useNavigation() { return useContext(NavigationContext); }
 
 export const Navigation: ParentComponent = (props) => {
@@ -37,6 +40,16 @@ export const Navigation: ParentComponent = (props) => {
                     }
 
                     setTitles([...titles, nav])
+                },
+                update_navigation_title: (nav: NavType) => {
+                    // a
+                },
+                delete_title: (owner: Owner) => {
+                    console.log("Owner", owner)
+                    setTitles((prev) => {
+                        console.log(prev)
+                        return [...prev]
+                    })
                 }
             }
         }>
@@ -59,18 +72,6 @@ export const NavigationItem: Component<NavigationItemType> = (props) => {
         scale: 1
     })
 
-    const styles = createSpring(() => ({
-        y: coords().y,
-        scale: coords().scale
-    }))
-
-    const bind = useDrag(({ active, movement: [my] }) => {
-        setCoords({
-            y: active ? my : 0,
-            scale: active ? 1.2 : 1
-        })
-    })
-
     if (!navigation || !owner) throw new Error("No navigation or navigation")
 
     createEffect(() => {
@@ -88,17 +89,27 @@ export const NavigationItem: Component<NavigationItemType> = (props) => {
     })
 
     return (
-        <animated.div
-            class="block p-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md"
+        <AnimatedDiv
+            class="flex justify-between p-3 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md"
             tabIndex={-1}
-            {...bind()}
-            style={styles()}
-        // href={props.href ?? props.text}
         >
-            {props.text}
-        </animated.div>
+            <A
+                class="grow"
+                href={props.href ?? props.text}
+            >
+                {props.text}
+            </A>
+            <button
+                onClick={() => {
+                    navigation.delete_title(owner);
+                }}>
+                Delete
+            </button>
+        </AnimatedDiv>
     )
 }
+
+const AnimatedDiv = animated("div")
 
 /* 
 <div>

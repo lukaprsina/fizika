@@ -5,7 +5,7 @@ import { useRouteData } from "solid-start";
 import { createServerData$ } from "solid-start/server";
 import Footer from "~/components/Footer";
 import Header from "~/components/Header";
-import { Navigation, NavigationItem, NavigationItemType } from "~/components/Navigation";
+import { Navigation, TitleType } from "~/components/NavigationNew";
 import Providers, { AppShellContent, AppShellFooter, AppShellHeader } from "~/layouts/Providers";
 import { authOptions } from "~/server/auth";
 import { prisma } from "~/server/db"
@@ -30,6 +30,15 @@ export function routeData() {
 
 const Home: VoidComponent = () => {
     const data = useRouteData<typeof routeData>();
+    const [titles, setTitles] = createSignal<TitleType[]>([])
+
+    createEffect(() => {
+        const topics = data()?.topics
+        if (!topics) return;
+
+        const titles = topics.map((topic) => { return { text: topic.title } })
+        setTitles(titles)
+    })
 
     return (
         <Providers>
@@ -37,14 +46,7 @@ const Home: VoidComponent = () => {
                 <Header name={data()?.session?.user?.name} />
             </AppShellHeader>
             <AppShellContent>
-                <Navigation>
-                    <For each={data()?.topics}>{(topic) =>
-                        <NavigationItem
-                            text={topic.title}
-                        />
-                    }
-                    </For>
-                </Navigation>
+                <Navigation titles={titles()} />
             </AppShellContent>
             <AppShellFooter>
                 <Footer />

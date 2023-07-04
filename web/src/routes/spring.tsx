@@ -2,6 +2,7 @@ import type { VoidComponent } from "solid-js";
 import { animated, config, createSprings } from "solid-spring";
 import { DragGesture } from "@use-gesture/vanilla";
 import { For, onMount } from "solid-js";
+import { useDrag } from "solid-gesture";
 
 function clamp(value: number, min: number, max: number) {
     return Math.min(Math.max(value, min), max)
@@ -61,7 +62,7 @@ function getSpringsProps(
                 shadow: 1,
                 immediate: false
             }
-        };
+        }
 
         return props;
     }
@@ -74,6 +75,7 @@ const DraggableList = (props: { items: string[] }) => {
     const divs: HTMLDivElement[] = [];
 
     const styles = createSprings(props.items.length, getSpringsProps(order)); // Create springs, each corresponds to an item, controlling its transform, scale, etc.
+    styles.ref
 
     onMount(() => {
         divs.forEach((div, originalIndex) => {

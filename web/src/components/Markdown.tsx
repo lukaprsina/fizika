@@ -147,7 +147,7 @@ const Markdown: VoidComponent<MarkdownProps> = (props) => {
 
         console.log(props.markdown)
 
-        const code = String(compileSync(text/* props.markdown */, {
+        const code = String(compileSync(props.markdown, {
             outputFormat: 'function-body',
             jsxImportSource: 'solid-js',
             providerImportSource: 'solid-jsx',
