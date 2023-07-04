@@ -54,7 +54,7 @@ function getSpringsProps(
                 scale: 1.1,
                 zIndex: 1,
                 shadow: 15,
-                immediate: (key: string) => key === "z-index",
+                immediate: (key: string) => key === "zIndex",
                 config: (key: string) => (key === "y" ? config.stiff : config.default)
             }
         }
@@ -90,6 +90,8 @@ type SpringType = {
     zIndex: SpringValue<number>;
     shadow: SpringValue<number>;
 }
+
+// TODO: scroll fucks everything up
 
 export const Navigation: VoidComponent<NavigationType> = (props) => {
     const [order, setOrder] = createSignal<number[]>([]);
