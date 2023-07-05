@@ -7,11 +7,12 @@ import { createStore } from "solid-js/store";
 import "mathlive/static.css"
 
 export const compute_engine = new ComputeEngine();
-type RenderFuncType = {
-    render_func: () => void;
-}
+type RenderFuncType = () => void;
 
-const MathContext = createContext<[Accessor<Variables>, { add_render_function: (func: RenderFuncType) => void }]>();
+const MathContext = createContext<[Accessor<Variables>, {
+    add: (id: number, func: RenderFuncType) => void,
+    edit_or_add: (id: number, func: RenderFuncType) => void,
+}]>();
 export function useMathSystem() { return useContext(MathContext); }
 
 export type Variables = Record<string, { low?: number, high?: number, exact?: number }>;
@@ -22,7 +23,7 @@ export type SystemProps = {
 
 export const System: ParentComponent<SystemProps> = (props) => {
     const [variables, setVariables] = createSignal<Variables>({});
-    const [renderFuncs, setRenderFuncs] = createStore<RenderFuncType[]>([]);
+    const [renderFuncs, setRenderFuncs] = createStore<{ render_func: RenderFuncType, id: number }[]>([]);
 
     createEffect(() => {
         if (Object.keys(variables()).length == 0) {
@@ -63,6 +64,9 @@ export const System: ParentComponent<SystemProps> = (props) => {
 
         compute_engine.pushScope(scope);
         for (const { render_func } of renderFuncs) {
+            if (!render_func) {
+                continue;
+            }
             render_func()
         }
 
@@ -73,8 +77,18 @@ export const System: ParentComponent<SystemProps> = (props) => {
     return <MathContext.Provider value={[
         variables,
         {
-            add_render_function: (func: RenderFuncType) => {
-                setRenderFuncs([...renderFuncs, func])
+            add(id: number, render_func: RenderFuncType) {
+                setRenderFuncs([...renderFuncs, { render_func, id }])
+            },
+            edit_or_add: (id: number, render_func: RenderFuncType) => {
+                for (const func of renderFuncs) {
+                    if (func.id == id) {
+                        setRenderFuncs(todo => todo.id == id, "render_func", () => render_func)
+                        return;
+                    }
+                }
+
+                setRenderFuncs([...renderFuncs, { render_func, id }])
             }
         }
     ]}>{props.children}</MathContext.Provider>
@@ -87,24 +101,21 @@ type EquationProps = {
     calculate?: boolean;
 };
 
+let sequential = 0;
 export const Equation: VoidComponent<EquationProps> = (props) => {
     const system = useMathSystem();
-    const [renderFunction, setRenderFunction] = createSignal<RenderFuncType>()
-    const [elem, setElem] = createSignal<HTMLSpanElement>();
-    let added_render_function = false;
+    if (!system) throw new Error("Math system doesn't exist")
+    let math_element: HTMLSpanElement;
+    // const [elem, setElem] = createSignal<HTMLSpanElement>();
 
-    if (!system) {
-        throw "Math system doesn't exist"
-    }
+    const original_index = sequential;
+    sequential++;
 
-    const [variables, { add_render_function: add_render_function }] = system;
+    const [variables, { edit_or_add }] = system;
 
     createEffect(() => {
         const render = (latex: string) => {
-            const math_element = elem();
-            if (!math_element) return;
-            // katex.render(latex, elem, { displayMode: props.full })
-            // ** Default **: `{display: [ ['$$', '$$'], ['\\[', '\\]'] ] ], inline: [ ['\\(','\\)'] ] ]}`
+            // ** Default **: `{display: [ ['$$', '$$'], ['\\[', '\\]'] ] ], inline: [ ['\\(','\\)'] ] ]}`            
             if (props.full)
                 math_element.innerHTML = `\$\$${latex}\$\$`;
             else
@@ -113,7 +124,7 @@ export const Equation: VoidComponent<EquationProps> = (props) => {
             renderMathInElement(math_element)
         }
 
-        const a = () => {
+        const render_func = () => {
             if (props.latex) {
                 if (props.calculate) {
                     const expression = compute_engine.parse(props.latex);
@@ -141,20 +152,10 @@ export const Equation: VoidComponent<EquationProps> = (props) => {
             }
         };
 
-        setRenderFunction({ render_func: a });
-    })
-
-    createEffect(() => {
-        const a = renderFunction();
-
-        if (!added_render_function && a) {
-            add_render_function(a);
-        }
-
-        added_render_function = true;
+        edit_or_add(original_index, render_func);
     })
 
     return (
-        <span ref={setElem} />
+        <span ref={math_element} />
     )
 }
