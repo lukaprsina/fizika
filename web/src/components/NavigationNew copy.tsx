@@ -1,7 +1,7 @@
-import { DragGesture } from "@use-gesture/vanilla";
-import type { Accessor, Setter } from "solid-js";
+import { DragGesture, ScrollGesture, WheelGesture } from "@use-gesture/vanilla";
+import type { Accessor } from "solid-js";
 import { For, createSignal, type VoidComponent, createEffect } from "solid-js";
-import { createStore, produce } from "solid-js/store";
+import { createStore } from "solid-js/store";
 import { animated, config, createSprings } from "solid-spring";
 import { A } from "solid-start";
 
@@ -39,6 +39,7 @@ function swap<T>(array: T[], moveIndex: number, toIndex: number) {
 
 function getSpringsProps(
     order: number[],
+    scroll: number,
     active = false,
     originalIndex = 0,
     curIndex = 0,
@@ -47,9 +48,10 @@ function getSpringsProps(
     const func = (index: number) => {
         let props;
 
+        // console.log(y)
         if (active && index === originalIndex) {
             props = {
-                y: curIndex * TITLE_HEIGHT + y,
+                y: curIndex * TITLE_HEIGHT + y + scroll,
                 scale: 1.1,
                 zIndex: 1,
                 shadow: 15,
@@ -59,7 +61,7 @@ function getSpringsProps(
         }
         else {
             props = {
-                y: order.indexOf(index) * TITLE_HEIGHT,
+                y: order.indexOf(index) * TITLE_HEIGHT + scroll,
                 scale: 1,
                 zIndex: 0,
                 shadow: 1,
@@ -94,10 +96,13 @@ export const Navigation: VoidComponent<NavigationType> = (props) => {
     const [order, setOrder] = createSignal<number[]>([]);
     const [titles, setTitles] = createStore<TitleType[]>([]);
     const [springs, setSprings] = createSignal<{ springs: Accessor<SpringType[]> }>();
+    let scroll_distance = 0;
+    let old_scroll_distance = 0;
+    let old_active = false;
 
     createEffect(() => {
         const initial_order = props.titles.map((_, index) => index);
-        const styles = createSprings(props.titles.length, getSpringsProps(initial_order));
+        const styles = createSprings(props.titles.length, getSpringsProps(initial_order, scroll_distance - old_scroll_distance));
         setTitles(props.titles)
         setSprings({ springs: styles })
     })
@@ -109,15 +114,27 @@ export const Navigation: VoidComponent<NavigationType> = (props) => {
 
         titles.forEach((title, originalIndex) => {
             if (!title.ref) return;
+
+            new ScrollGesture(window, ({ xy }) => {
+                scroll_distance = xy[1]
+            })
+
             new DragGesture(title.ref, ({ active, movement: [, y] }) => {
+                if (active && !old_active) {
+                    old_scroll_distance = scroll_distance;
+                    old_active = active;
+                    console.error("setting old active", { old_scroll_distance, scroll_distance })
+                }
+                console.log(scroll_distance - old_scroll_distance)
+
                 const curIndex = indices.indexOf(originalIndex);
                 const curRow = clamp(
-                    Math.round((curIndex * TITLE_HEIGHT + y) / TITLE_HEIGHT),
+                    Math.round((curIndex * TITLE_HEIGHT + y + scroll_distance - old_scroll_distance) / TITLE_HEIGHT),
                     0,
                     titles.length - 1
                 );
                 const newOrder = swap(order(), curIndex, curRow);
-                spr.springs.ref.start(getSpringsProps(newOrder, active, originalIndex, curIndex, y)); // Feed springs new style data, they'll animate the view without causing a single render
+                spr.springs.ref.start(getSpringsProps(newOrder, scroll_distance - old_scroll_distance, active, originalIndex, curIndex, y)); // Feed springs new style data, they'll animate the view without causing a single render
                 if (!active) setOrder(newOrder);
             })
         });
@@ -155,13 +172,6 @@ export const Navigation: VoidComponent<NavigationType> = (props) => {
                         <button
                             onClick={() => {
                                 console.log("delete")
-                                //TODO: also update when deleting
-                                setTitles(produce((titles_produce) => {
-                                    const index = titles_produce.findIndex((title) => title.text == titles[i()].text)
-
-                                    if (index == -1) throw new Error("Not found")
-                                    else titles_produce.splice(index, 1)
-                                }))
                             }}>
                             Delete
                         </button>
