@@ -86,9 +86,14 @@ const DraggableList = (props: { items: string[] }) => {
                     0,
                     props.items.length - 1
                 );
+
+                console.log("swapping", curIndex, curRow)
                 const newOrder = swap(order, curIndex, curRow);
                 styles.ref.start(getSpringsProps(newOrder, active, originalIndex, curIndex, y)); // Feed springs new style data, they'll animate the view without causing a single render
-                if (!active) order = newOrder;
+                if (!active) {
+                    console.log(newOrder)
+                    order = newOrder;
+                }
             });
         });
     });

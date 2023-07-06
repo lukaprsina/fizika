@@ -90,6 +90,7 @@ type SpringType = {
     shadow: any;
 }
 
+// TODO: order isn't correct
 export const Navigation: VoidComponent<NavigationType> = (props) => {
     const [order, setOrder] = createSignal<number[]>([]);
     const [titles, setTitles] = createStore<TitleType[]>([]);
@@ -110,12 +111,13 @@ export const Navigation: VoidComponent<NavigationType> = (props) => {
         titles.forEach((title, originalIndex) => {
             if (!title.ref) return;
             new DragGesture(title.ref, ({ active, movement: [, y] }) => {
-                const curIndex = indices.indexOf(originalIndex);
+                const curIndex = order().indexOf(originalIndex);
                 const curRow = clamp(
                     Math.round((curIndex * TITLE_HEIGHT + y) / TITLE_HEIGHT),
                     0,
                     titles.length - 1
                 );
+
                 const newOrder = swap(order(), curIndex, curRow);
                 spr.springs.ref.start(getSpringsProps(newOrder, active, originalIndex, curIndex, y)); // Feed springs new style data, they'll animate the view without causing a single render
                 if (!active) setOrder(newOrder);
@@ -154,7 +156,6 @@ export const Navigation: VoidComponent<NavigationType> = (props) => {
                         {' '}
                         <button
                             onClick={() => {
-                                console.log("delete")
                                 //TODO: also update when deleting
                                 setTitles(produce((titles_produce) => {
                                     const index = titles_produce.findIndex((title) => title.text == titles[i()].text)
