@@ -1,13 +1,12 @@
 import { getSession } from "@solid-auth/base";
 import type { VoidComponent } from "solid-js";
 import { createEffect, createSignal } from "solid-js";
-import { createStore } from "solid-js/store";
 import { useRouteData } from "solid-start";
 import { createServerData$ } from "solid-start/server";
 import Footer from "~/components/Footer";
 import Header from "~/components/Header";
-import type { TitleType } from "~/components/NavigationNew";
-import { Navigation } from "~/components/NavigationNew";
+import type { TitleType } from "~/components/Navigation";
+import { Navigation } from "~/components/Navigation";
 import Providers, { AppShellContent, AppShellFooter, AppShellHeader } from "~/layouts/Providers";
 import { authOptions } from "~/server/auth";
 import { prisma } from "~/server/db"

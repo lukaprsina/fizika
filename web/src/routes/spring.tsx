@@ -75,7 +75,6 @@ const DraggableList = (props: { items: string[] }) => {
     const divs: HTMLDivElement[] = [];
 
     const styles = createSprings(props.items.length, getSpringsProps(order)); // Create springs, each corresponds to an item, controlling its transform, scale, etc.
-    styles.ref
 
     onMount(() => {
         divs.forEach((div, originalIndex) => {
