@@ -58,7 +58,7 @@ async function main() {
         const script_file = fs.readFileSync(script_path).toString();
         const script_json = JSON.parse(script_file);
 
-        const script_title = script_json.metadata.title.substring(3)
+        // const script_title = script_json.metadata.title.substring(3)
         /* if (config_json.heading != script_title)
             throw `c_h: ${config_json.heading}, s_t: ${script_title}`
         if (config_json.goals != script_json.metadata.goals) {
@@ -102,9 +102,6 @@ async function main() {
                         description: script_json.metadata.description,
                         goals: script_json.metadata.goals,
                         license: script_json.metadata.license,
-                        keywords: {
-                            connectOrCreate: keywords
-                        }
                     },
                 },
                 resource: {

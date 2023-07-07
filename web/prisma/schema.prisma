@@ -53,12 +53,6 @@ model VerificationToken {
     @@unique([identifier, token])
 }
 
-// model User {
-//     id          String  @id @default(uuid())
-//     displayName String
-//     topic       Topic[]
-// }
-
 model Course {
     id     Int     @id @default(autoincrement())
     title  String  @unique
@@ -72,9 +66,11 @@ model Course {
 }
 
 model Topic {
-    id      Int    @id @unique
-    title   String @unique
-    year    Int
+    id     Int     @id @unique
+    title  String  @unique
+    year   Int
+    active Boolean @default(true)
+
     pages   Page[]
     authors User[]
 
@@ -93,6 +89,7 @@ model Page {
     title    String?
     markdown String
     text     String
+    active   Boolean @default(true)
 
     topic   Topic @relation(fields: [topicId], references: [id])
     topicId Int
@@ -107,8 +104,7 @@ model Page {
 }
 
 model Resource {
-    id        Int        @id @default(autoincrement())
-    variables Variable[]
+    id Int @id @default(autoincrement())
 
     course Course?
     topic  Topic?
@@ -116,29 +112,14 @@ model Resource {
 }
 
 model Metadata {
-    id          Int       @id @default(autoincrement())
+    id          Int      @id @default(autoincrement())
     description String?
-    keywords    Keyword[]
     goals       String?
     license     String?
-    createdAt   DateTime  @default(now())
-    modifiedAt  DateTime  @default(now())
+    createdAt   DateTime @default(now())
+    modifiedAt  DateTime @default(now())
 
     course Course?
     topic  Topic?
     page   Page?
-}
-
-model Keyword {
-    value String @id
-
-    metadata Metadata[]
-}
-
-model Variable {
-    id         Int       @id @default(autoincrement())
-    from       Int
-    to         Int
-    resource   Resource? @relation(fields: [resourceId], references: [id])
-    resourceId Int?
 }

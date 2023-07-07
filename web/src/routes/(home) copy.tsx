@@ -1,24 +1,22 @@
 import { getSession } from "@solid-auth/base";
 import type { VoidComponent } from "solid-js";
 import { createEffect, createSignal } from "solid-js";
+import { createStore } from "solid-js/store";
 import { useRouteData } from "solid-start";
-import { createServerData$, createServerAction$ } from "solid-start/server";
+import { createServerData$ } from "solid-start/server";
 import Footer from "~/components/Footer";
 import Header from "~/components/Header";
-import type { TitleType } from "~/components/Navigation";
-import { Navigation } from "~/components/Navigation";
+import type { TitleType } from "~/components/NavigationNew";
+import { Navigation } from "~/components/NavigationNew";
 import Providers, { AppShellContent, AppShellFooter, AppShellHeader } from "~/layouts/Providers";
 import { authOptions } from "~/server/auth";
 import { prisma } from "~/server/db"
-
-// todo: replace page urls with names
 
 export function routeData() {
     return createServerData$(async (_, { request }) => {
         const topics = await prisma?.topic.findMany({
             where: {
-                course: { title: "Fizika" },
-                active: true,
+                course: { title: "Fizika" }
             },
             include: {
                 authors: {}
@@ -34,12 +32,8 @@ export function routeData() {
 
 const Home: VoidComponent = () => {
     const data = useRouteData<typeof routeData>();
-    const [titles, setTitles] = createSignal<TitleType[]>([]);
-
-    const [_, moveTitleToTrash] = createServerAction$(async (name: string) => {
-        const result = await prisma.topic.update({ where: { title: name }, data: { active: false } })
-        console.log("from server", name, result)
-    });
+    const [titles, setTitles] = createStore<TitleType[]>([]);
+    const [titlesReady, setTitlesReady] = createSignal(false);
 
     createEffect(() => {
         const topics = data()?.topics
@@ -47,6 +41,9 @@ const Home: VoidComponent = () => {
 
         const titles = topics.map((topic) => { return { text: topic.title } })
         setTitles(titles)
+        setTimeout(() => {
+            setTitlesReady(true)
+        }, 1000)
     })
 
     return (
@@ -55,7 +52,7 @@ const Home: VoidComponent = () => {
                 <Header name={data()?.session?.user?.name} />
             </AppShellHeader>
             <AppShellContent>
-                <Navigation titles={titles()} delete={moveTitleToTrash} />
+                <Navigation titles={() => titles} setTitles={setTitles} titlesReady={titlesReady()} />
             </AppShellContent>
             <AppShellFooter>
                 <Footer />

@@ -1,8 +1,8 @@
 import { router } from "../utils";
-import example from "./example";
+import titles from "./titles";
 
 export const appRouter = router({
-  example,
+  titles,
 });
 
 export type IAppRouter = typeof appRouter;
