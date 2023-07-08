@@ -13,7 +13,8 @@ import { authOptions } from "~/server/auth";
 import { prisma } from "~/server/db"
 
 export function routeData({ params }: RouteDataArgs) {
-    return createServerData$(async ([, topic_name], { request }) => {
+    return createServerData$(async ([source, topic_name], { request }) => {
+        console.log("KEY", source)
         const session = await getSession(request, authOptions);
         const result: {
             session: typeof session,
@@ -31,7 +32,7 @@ export function routeData({ params }: RouteDataArgs) {
 
         const pages = await prisma?.page.findMany({
             where: {
-                id: topic.id,
+                topicId: topic.id,
                 active: true,
             },
             select: {
@@ -60,12 +61,8 @@ const TopicNavbar: Component = () => {
         const page_data = topic_data()?.pages
         if (!page_data) return;
 
-        const parsed_pages = page_data.map((page) => (
-            {
-                text: page.title ?? "Stran " + page.id,
-                href: page.title ?? page.id,
-            }
-        ))
+        // TODO: page title
+        const parsed_pages = page_data.map((page) => { return { text: page.title ?? "" } })
         setPages(parsed_pages)
     })
 

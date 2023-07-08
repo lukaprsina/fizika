@@ -176,7 +176,7 @@ function getSpringsProps(
 
 export type TitleType = {
     text: string;
-    href?: string | number;
+    href?: string;
     ref?: HTMLDivElement
 };
 

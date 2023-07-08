@@ -11,7 +11,7 @@ import Providers, { AppShellContent, AppShellFooter, AppShellHeader } from "~/la
 import { authOptions } from "~/server/auth";
 import { prisma } from "~/server/db"
 
-// todo: replace page urls with namess
+// todo: replace page urls with names
 
 export function routeData() {
     return createServerData$(async (_, { request }) => {
