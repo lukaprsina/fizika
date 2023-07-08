@@ -33,20 +33,29 @@ export function routeData({ params }: RouteDataArgs) {
                 title: topicArg
             }
         });
-
-        const page_id = parseInt(pageArg);
-
-        if (isNaN(page_id)) return result;
         if (!topic) return result;
 
-        const page = await prisma?.page.findUnique({
-            where: {
-                topicId_id: {
-                    id: page_id,
-                    topicId: topic.id,
+        const page_id = parseInt(pageArg);
+        let page: PageType;
+
+        if (isNaN(page_id)) {
+            page = await prisma?.page.findUnique({
+                where: {
+                    topicId_id: {
+                        id: page_id,
+                        topicId: topic.id,
+                    }
                 }
-            }
-        });
+            });
+        } else if (typeof pageArg == "string") {
+            page = await prisma?.page.findUnique({
+                where: {
+
+                }
+            });
+        } else {
+            return result;
+        }
 
         const page_count = await prisma?.page.count({
             where: {
