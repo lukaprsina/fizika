@@ -28,7 +28,7 @@ export function routeData({ params }: RouteDataArgs) {
             page?: PageType | null
         } = { session }
 
-        const topic = await prisma?.topic.findUnique({
+        const topic = await prisma.topic.findUnique({
             where: {
                 title: topicArg
             }
@@ -39,7 +39,7 @@ export function routeData({ params }: RouteDataArgs) {
         if (isNaN(page_id)) return result;
         if (!topic) return result;
 
-        const page = await prisma?.page.findUnique({
+        const page = await prisma.page.findUnique({
             where: {
                 topicId_id: {
                     id: page_id,
@@ -48,7 +48,7 @@ export function routeData({ params }: RouteDataArgs) {
             }
         });
 
-        const page_count = await prisma?.page.count({
+        const page_count = await prisma.page.count({
             where: {
                 topicId: topic.id,
             }
@@ -59,7 +59,7 @@ export function routeData({ params }: RouteDataArgs) {
 
         return result;
     }, {
-        key: () => ["page", decodeURI(params.topic), decodeURI(params.page)]
+        key: () => ["page", decodeURIComponent(params.topic), decodeURIComponent(params.page)]
     })
 }
 
@@ -105,7 +105,7 @@ const Page: VoidComponent = () => {
                     </TabButton>
                 </TabButtonsContainer>
                 <AppShellHeader>
-                    <Header topic={decodeURI(params.topic)} name={page_data()?.session?.user?.name} />
+                    <Header topic={decodeURIComponent(params.topic)} name={page_data()?.session?.user?.name} />
                 </AppShellHeader>
                 <AppShellContent>
                     <Tab

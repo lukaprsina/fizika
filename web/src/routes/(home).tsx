@@ -15,7 +15,7 @@ import { prisma } from "~/server/db"
 
 export function routeData() {
     return createServerData$(async (_, { request }) => {
-        const topics = await prisma?.topic.findMany({
+        const topics = await prisma.topic.findMany({
             where: {
                 course: { title: "Fizika" },
                 active: true,
@@ -36,16 +36,15 @@ const Home: VoidComponent = () => {
     const data = useRouteData<typeof routeData>();
     const [titles, setTitles] = createSignal<TitleType[]>([]);
 
-    const [_, moveTitleToTrash] = createServerAction$(async (name: string) => {
-        const result = await prisma.topic.update({ where: { title: name }, data: { active: false } })
-        console.log("from server", name, result)
+    const [, moveTitleToTrash] = createServerAction$(async (name: string) => {
+        await prisma.topic.update({ where: { title: name }, data: { active: false } })
     });
 
     createEffect(() => {
         const topics = data()?.topics
         if (!topics) return;
 
-        const titles = topics.map((topic) => { return { text: topic.title } })
+        const titles = topics.map((topic) => ({ text: topic.title }))
         setTitles(titles)
     })
 

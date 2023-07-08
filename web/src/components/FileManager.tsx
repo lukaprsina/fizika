@@ -26,7 +26,7 @@ const FileManager: Component<FileManagerType> = (props) => {
             >
                 <div class="bg-neutral-800 p-3">
                     <Show when={params.topic}>
-                        <A href="test">{decodeURI(params.topic)}</A>
+                        <A href="test">{decodeURIComponent(params.topic)}</A>
                     </Show>
                     <Show when={params.page}>
                         <span>{" / "}</span>

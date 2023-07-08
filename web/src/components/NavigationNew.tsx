@@ -69,7 +69,7 @@ export const Navigation: VoidComponent<NavigationType> = (props) => {
 
         batch(() => {
             setOrder(indices);
-            setSprings(() => { return { springs: new_springs } })
+            setSprings(() => ({ springs: new_springs }))
         })
     })
 
