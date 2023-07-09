@@ -87,7 +87,7 @@ export const Navigation: VoidComponent<NavigationType> = (props) => {
                                 // trpcContext.titles.hello.
                                 // trpc.titles.moveToTrash.useQuery({ name: titles[i()].text })
                                 if (props.delete)
-                                    props.delete(titles[i()].href)
+                                    props.delete(titles[i()].href ?? titles[i()].text)
                                 /* setTitles(produce((titles_produce) => {
                                     const index = titles_produce.findIndex((title) => title.text == titles[i()].text)
 
