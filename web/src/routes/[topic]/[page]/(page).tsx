@@ -1,6 +1,6 @@
 import { createShortcut } from "@solid-primitives/keyboard";
 import { Button } from "solid-headless";
-import { AiOutlineArrowLeft, AiOutlineArrowRight } from 'solid-icons/ai';
+import { HiOutlineArrowLeft, HiOutlineArrowRight } from 'solid-icons/hi';
 import type { VoidComponent, ParentComponent } from "solid-js";
 import { mergeProps } from "solid-js";
 import { createEffect, createSignal, Show } from "solid-js";
@@ -208,14 +208,14 @@ const NavButtons: VoidComponent<NavButtonsType> = (props) => {
             <Show when={pageId() > 0}>
                 <IconButton>
                     <A href={baseURL() + (pageId() - 1)}>
-                        <AiOutlineArrowLeft size={icon_size} />
+                        <HiOutlineArrowLeft size={icon_size} />
                     </A>
                 </IconButton>
             </Show>
             <Show when={pageId() < merged.page_count - 1}>
                 <IconButton>
                     <A href={baseURL() + (pageId() + 1)}>
-                        <AiOutlineArrowRight size={icon_size} />
+                        <HiOutlineArrowRight size={icon_size} />
                     </A>
                 </IconButton>
             </Show>

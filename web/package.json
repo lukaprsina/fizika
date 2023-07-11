@@ -29,6 +29,7 @@
     "vite": "^4.3.9"
   },
   "dependencies": {
+    "@ark-ui/solid": "^0.8.1",
     "@auth/core": "^0.9.0",
     "@cortex-js/compute-engine": "^0.12.3",
     "@mdx-js/mdx": "^2.3.0",
@@ -43,6 +44,7 @@
     "@solid-primitives/upload": "^0.0.113",
     "@solidjs/meta": "^0.28.5",
     "@solidjs/router": "^0.8.2",
+    "@suid/material": "^0.13.1",
     "@tanstack/solid-query": "5.0.0-alpha.20",
     "@trpc/client": "^10.33.0",
     "@trpc/server": "^10.33.0",

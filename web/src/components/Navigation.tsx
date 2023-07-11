@@ -4,12 +4,14 @@ import { For, createSignal, type VoidComponent, createEffect, batch } from "soli
 import { createStore } from "solid-js/store";
 import { animated, config, createSprings } from "solid-spring";
 import { A } from "solid-start";
+import { Menu, MenuItem } from "@suid/material"
 
 const TITLE_HEIGHT = 52;
 
 export type NavigationType = {
     titles: TitleType[];
-    delete?: ((vars: string) => Promise<void>);
+    delete?: (title: string) => Promise<void>;
+    rename?: (old_title: string, new_title: string) => Promise<void>;
 }
 
 export const Navigation: VoidComponent<NavigationType> = (props) => {
@@ -59,49 +61,74 @@ export const Navigation: VoidComponent<NavigationType> = (props) => {
         <div class="w-full flex justify-center" style={{
             "height": (titles.length * TITLE_HEIGHT).toString() + "px",
         }}>
-            <For each={springs()?.springs()}>{({ zIndex, shadow, y, scale }, i) => (
-                <AnimatedDiv
-                    class="w-96 absolute flex justify-between origin-[50% 50% 0px] touch-none p-3 bg-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md"
-                    style={{
-                        "z-index": zIndex.to((z: number) => z.toString()),
-                        "box-shadow": shadow.to(
-                            (s: number) => `rgba(0, 0, 0, 0.15) 0px ${s}px ${2 * s}px 0px`
-                        ),
-                        y,
-                        scale
-                    }}
-                    tabIndex={-1}
-                    ref={(ref: HTMLDivElement) => setTitles([i()], "ref", ref)}
-                >
-                    <A
-                        class="grow"
-                        href={titles[i()].href ?? titles[i()].text}
+            <For each={springs()?.springs()}>{({ zIndex, shadow, y, scale }, i) => {
+                const [anchorEl, setAnchorEl] = createSignal<null | HTMLElement>(null);
+                const open = () => Boolean(anchorEl());
+                const handleClose = () => {
+                    setAnchorEl(null);
+                };
+
+                return (
+                    <AnimatedDiv
+                        class="w-96 absolute flex justify-between origin-[50% 50% 0px] touch-none p-3 bg-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md"
+                        style={{
+                            "z-index": zIndex.to((z: number) => z.toString()),
+                            "box-shadow": shadow.to(
+                                (s: number) => `rgba(0, 0, 0, 0.15) 0px ${s}px ${2 * s}px 0px`
+                            ),
+                            y,
+                            scale
+                        }}
+                        tabIndex={-1}
+                        ref={(ref: HTMLDivElement) => setTitles([i()], "ref", ref)}
                     >
-                        {titles[i()].text}
-                    </A>
-                    <div>
-                        <span class="select-none touch-none">Grip</span>
+                        <A
+                            class="grow"
+                            href={titles[i()].href ?? titles[i()].text}
+                        >
+                            {titles[i()].text}
+                        </A>
+                        <div>
+                            <button
+                                onClick={(event) => {
+                                    setAnchorEl(event.currentTarget);
+                                }}
+                            >
+                                Dashboard
+                            </button>
+                            <Menu
+                                anchorEl={anchorEl()}
+                                open={open()}
+                                onClose={handleClose}
+                            >
+                                <MenuItem onClick={handleClose}>Profile</MenuItem>
+                                <MenuItem onClick={handleClose}>My account</MenuItem>
+                                <MenuItem onClick={handleClose}>Logout</MenuItem>
+                            </Menu>
+                            {/* <span class="select-none touch-none">Grip</span>
                         {' '}
                         <button
                             onClick={() => {
-                                // trpcContext.titles.hello.
-                                // trpc.titles.moveToTrash.useQuery({ name: titles[i()].text })
                                 if (props.delete)
                                     props.delete(titles[i()].href ?? titles[i()].text)
-                                /* setTitles(produce((titles_produce) => {
-                                    const index = titles_produce.findIndex((title) => title.text == titles[i()].text)
-
-                                    if (index == -1) throw new Error("Not found")
-                                    else titles_produce.splice(index, 1)
-                                })) */
-                                // TODO: just reload and use trpc
-
                             }}>
                             Delete
                         </button>
-                    </div>
-                </AnimatedDiv>
-            )}</For>
+                        {' '}
+                        <button
+                            onClick={() => {
+                                if (props.rename)
+                                    props.rename(
+                                        titles[i()].href ?? titles[i()].text,
+                                        "a"
+                                    )
+                            }}>
+                            Edit
+                        </button> */}
+                        </div>
+                    </AnimatedDiv>
+                )
+            }}</For>
         </div >
     )
 }

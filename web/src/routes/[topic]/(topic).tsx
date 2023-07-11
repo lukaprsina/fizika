@@ -55,11 +55,11 @@ const TopicNavbar: Component = () => {
     const [pages, setPages] = createSignal<TitleType[]>([]);
     const params = useParams<ParamsType>();
 
-    const [, movePageToTrash] = createServerAction$(async ({ id, topic: topic_url }: {
-        id: string,
-        topic: string
+    const [, movePageToTrash] = createServerAction$(async ({ title, topic_url }: {
+        title: string,
+        topic_url: string
     }) => {
-        const parsed_name = parseInt(id);
+        const parsed_name = parseInt(title);
         if (isNaN(parsed_name)) return;
 
         const decoded_topic = decodeURIComponent(topic_url)
@@ -77,6 +77,29 @@ const TopicNavbar: Component = () => {
                 topicId_id: { id: parsed_name, topicId: topic?.id }
             },
             data: { active: false }
+        })
+    });
+
+    const [, renamePage] = createServerAction$(async ({ old_title, new_title, topic_url }:
+        { old_title: string, new_title: string, topic_url: string }) => {
+        const parsed_name = parseInt(old_title);
+        if (isNaN(parsed_name)) return;
+
+        const decoded_topic = decodeURIComponent(topic_url)
+
+        const topic = await prisma?.topic.findUnique({
+            where: {
+                title: decoded_topic
+            }
+        });
+
+        if (!topic) return;
+
+        await prisma.page.update({
+            where: {
+                topicId_id: { id: parsed_name, topicId: topic?.id }
+            },
+            data: { title: new_title }
         })
     });
 
@@ -98,13 +121,24 @@ const TopicNavbar: Component = () => {
                 <Header topic={decodeURIComponent(params.topic)} name={topic_data()?.session?.user?.name} />
             </AppShellHeader>
             <AppShellContent>
-                <Navigation titles={pages()} delete={(id: string) => {
-                    movePageToTrash({
-                        id,
-                        topic: params.topic
-                    });
-                    return new Promise(() => { return; })
-                }} />
+                <Navigation
+                    titles={pages()}
+                    delete={(title) => {
+                        movePageToTrash({
+                            title,
+                            topic_url: params.topic
+                        });
+                        return new Promise(() => { return; })
+                    }}
+                    rename={(old_title, new_title) => {
+                        renamePage({
+                            old_title,
+                            new_title,
+                            topic_url: params.topic
+                        });
+                        return new Promise(() => { return; })
+                    }}
+                />
             </AppShellContent>
             <AppShellFooter>
                 <Footer />
