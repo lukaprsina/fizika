@@ -1,10 +1,11 @@
 import { DragGesture } from "@use-gesture/vanilla";
 import type { Accessor } from "solid-js";
-import { For, createSignal, type VoidComponent, createEffect, batch } from "solid-js";
+import { For, createSignal, type VoidComponent, createEffect, batch, Show } from "solid-js";
 import { createStore } from "solid-js/store";
 import { animated, config, createSprings } from "solid-spring";
 import { A } from "solid-start";
-import { Menu, MenuItem } from "@suid/material"
+import { Menu, MenuItem, TextField } from "@suid/material"
+import { HiOutlineEllipsisVertical, HiOutlineBars3, HiOutlineCheck } from "solid-icons/hi"
 
 const TITLE_HEIGHT = 52;
 
@@ -20,6 +21,7 @@ export const Navigation: VoidComponent<NavigationType> = (props) => {
 
     const [springs, setSprings] = createSignal<{
         springs: Accessor<SpringType[]> & {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ref: any;
         }
     }>();
@@ -40,6 +42,7 @@ export const Navigation: VoidComponent<NavigationType> = (props) => {
 
         titles.forEach((title, originalIndex) => {
             if (!title.ref) return;
+            // eslint-disable-next-line solid/reactivity
             new DragGesture(title.ref, ({ active, movement: [, y] }) => {
                 const curIndex = order().indexOf(originalIndex);
                 const curRow = clamp(
@@ -62,11 +65,19 @@ export const Navigation: VoidComponent<NavigationType> = (props) => {
             "height": (titles.length * TITLE_HEIGHT).toString() + "px",
         }}>
             <For each={springs()?.springs()}>{({ zIndex, shadow, y, scale }, i) => {
-                const [anchorEl, setAnchorEl] = createSignal<null | HTMLElement>(null);
-                const open = () => Boolean(anchorEl());
+                const [anchorElement, setAnchorElement] = createSignal<HTMLElement>();
+                const [openRename, setOpenRename] = createSignal(false);
+                const [newName, setNewName] = createSignal("");
                 const handleClose = () => {
-                    setAnchorEl(null);
+                    setAnchorElement();
                 };
+                const renameTitle = () => {
+                    const id = titles[i()].href ? "" + i() : titles[i()].text
+
+                    if (props.rename)
+                        props.rename(id, newName())
+                    setOpenRename(false)
+                }
 
                 return (
                     <AnimatedDiv
@@ -86,45 +97,62 @@ export const Navigation: VoidComponent<NavigationType> = (props) => {
                             class="grow"
                             href={titles[i()].href ?? titles[i()].text}
                         >
-                            {titles[i()].text}
-                        </A>
-                        <div>
-                            <button
-                                onClick={(event) => {
-                                    setAnchorEl(event.currentTarget);
-                                }}
+                            <Show
+                                when={openRename()}
+                                fallback={titles[i()].text}
                             >
-                                Dashboard
+                                <div class="flex flex-row">
+                                    <TextField
+                                        inputProps={{
+                                            "onClick": (event: MouseEvent) => event.preventDefault(),
+                                            "onKeyUp": (event: KeyboardEvent) => {
+                                                if (event.key == "Enter") {
+                                                    event.preventDefault();
+                                                    renameTitle()
+                                                    event.preventDefault();
+                                                }
+                                            }
+                                        }}
+                                        onChange={(name) => setNewName(name.target.value)}
+                                        label="New title"
+                                        size="small"
+                                        defaultValue={titles[i()].text}
+                                    />
+                                    <button
+                                        onClick={(event: MouseEvent) => {
+                                            event.preventDefault();
+                                            renameTitle();
+                                        }}
+                                        class="px-2">
+                                        <HiOutlineCheck size="20px" />
+                                    </button>
+                                </div>
+                            </Show>
+
+                        </A>
+                        <div class="flex flex-row">
+                            <span class="flex select-none touch-none items-center"><HiOutlineBars3 /></span>
+                            <button
+                                onClick={(event) => setAnchorElement(event.currentTarget)}
+                            >
+                                <HiOutlineEllipsisVertical />
                             </button>
                             <Menu
-                                anchorEl={anchorEl()}
-                                open={open()}
+                                anchorEl={anchorElement()}
+                                open={Boolean(anchorElement())}
                                 onClose={handleClose}
                             >
-                                <MenuItem onClick={handleClose}>Profile</MenuItem>
-                                <MenuItem onClick={handleClose}>My account</MenuItem>
-                                <MenuItem onClick={handleClose}>Logout</MenuItem>
+                                <MenuItem onClick={() => {
+                                    handleClose();
+                                    if (props.delete)
+                                        props.delete(titles[i()].href ?? titles[i()].text)
+                                }}>Zbriši</MenuItem>
+                                <MenuItem onClick={() => {
+                                    handleClose();
+                                    if (props.rename)
+                                        setOpenRename(true)
+                                }}>Preimenuj</MenuItem>
                             </Menu>
-                            {/* <span class="select-none touch-none">Grip</span>
-                        {' '}
-                        <button
-                            onClick={() => {
-                                if (props.delete)
-                                    props.delete(titles[i()].href ?? titles[i()].text)
-                            }}>
-                            Delete
-                        </button>
-                        {' '}
-                        <button
-                            onClick={() => {
-                                if (props.rename)
-                                    props.rename(
-                                        titles[i()].href ?? titles[i()].text,
-                                        "a"
-                                    )
-                            }}>
-                            Edit
-                        </button> */}
                         </div>
                     </AnimatedDiv>
                 )
@@ -208,8 +236,12 @@ export type TitleType = {
 };
 
 type SpringType = {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     y: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     scale: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     zIndex: any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     shadow: any;
 }
