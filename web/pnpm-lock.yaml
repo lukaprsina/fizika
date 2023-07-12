@@ -102,7 +102,7 @@ dependencies:
     specifier: ^1.0.11
     version: 1.0.11(solid-js@1.7.8)
   solid-js:
-    specifier: ^1.7.8
+    specifier: ^1.7.7
     version: 1.7.8
   solid-jsx:
     specifier: ^0.9.1
@@ -130,6 +130,9 @@ dependencies:
     version: 3.21.4
 
 devDependencies:
+  '@suid/vite-plugin':
+    specifier: ^0.1.4
+    version: 0.1.4(vite@4.4.3)
   '@types/dompurify':
     specifier: ^3.0.2
     version: 3.0.2
@@ -2319,6 +2322,22 @@ packages:
       '@suid/types': 0.5.2(solid-js@1.7.8)
       solid-js: 1.7.8
     dev: false
+
+  /@suid/vite-plugin@0.1.4(vite@4.4.3):
+    resolution: {integrity: sha512-TGVKDwHYgT0hjSVp8CNWCAf3UlfnP6EVOTnjKVluxl/Vac0LPCZUU6iX6grWXw4TLXJWYvt5AqcK894gOisx5g==}
+    peerDependencies:
+      vite: ^4.0.0
+    dependencies:
+      '@babel/generator': 7.22.5
+      '@babel/parser': 7.22.5
+      '@babel/traverse': 7.22.5
+      '@babel/types': 7.22.5
+      '@types/babel__generator': 7.6.4
+      '@types/babel__traverse': 7.20.1
+      vite: 4.4.3(@types/node@20.4.1)(sass@1.63.6)
+    transitivePeerDependencies:
+      - supports-color
+    dev: true
 
   /@swc/helpers@0.5.1:
     resolution: {integrity: sha512-sJ902EfIzn1Fa+qYmjdQqh8tPsoxyBz+8yBKC2HKUxyezKJFwPGOn7pv4WY6QuQW//ySQi5lJjA/ZT9sNWWNTg==}

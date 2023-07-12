@@ -1,10 +1,12 @@
 import solid from "solid-start/vite";
 import { defineConfig } from "vite";
 import copy from 'rollup-plugin-copy'
+import suid from "@suid/vite-plugin";
 
 export default defineConfig(() => {
   return {
     plugins: [
+      suid(),
       solid({ ssr: true }),
       copy({
         targets: [
