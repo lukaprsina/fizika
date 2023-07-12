@@ -1,8 +1,6 @@
-import { Menu, MenuContent, MenuItem, MenuPositioner, MenuTrigger } from "@ark-ui/solid";
 import { getSession } from "@solid-auth/base";
 import type { VoidComponent } from "solid-js";
 import { createEffect, createSignal } from "solid-js";
-import { Portal } from "solid-js/web";
 import { useRouteData } from "solid-start";
 import { createServerData$, createServerAction$ } from "solid-start/server";
 import Footer from "~/components/Footer";
@@ -12,8 +10,6 @@ import { Navigation } from "~/components/Navigation";
 import Providers, { AppShellContent, AppShellFooter, AppShellHeader } from "~/layouts/Providers";
 import { authOptions } from "~/server/auth";
 import { prisma } from "~/server/db"
-
-// todo: replace page urls with names
 
 export function routeData() {
     return createServerData$(async (_, { request }) => {

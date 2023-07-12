@@ -42,9 +42,16 @@ export const Navigation: VoidComponent<NavigationType> = (props) => {
 
         titles.forEach((title, originalIndex) => {
             if (!title.ref) return;
+
+            const targets = title.ref.getElementsByClassName("grab-bars")
+            if (targets.length != 1) return;
+
             // eslint-disable-next-line solid/reactivity
-            new DragGesture(title.ref, ({ active, movement: [, y] }) => {
+            new DragGesture(targets[0], ({ active, movement: [, y], }) => {
+                const is_svg = true;
+
                 const curIndex = order().indexOf(originalIndex);
+
                 const curRow = clamp(
                     Math.round((curIndex * TITLE_HEIGHT + y) / TITLE_HEIGHT),
                     0,
@@ -52,7 +59,7 @@ export const Navigation: VoidComponent<NavigationType> = (props) => {
                 );
 
                 const newOrder = swap(order(), curIndex, curRow);
-                spr.springs.ref.start(getSpringsProps(newOrder, active, originalIndex, curIndex, y)); // Feed springs new style data, they'll animate the view without causing a single render
+                spr.springs.ref.start(getSpringsProps(newOrder, active && is_svg, originalIndex, curIndex, y)); // Feed springs new style data, they'll animate the view without causing a single render
                 if (!active) setOrder(newOrder);
             })
         });
@@ -68,9 +75,11 @@ export const Navigation: VoidComponent<NavigationType> = (props) => {
                 const [anchorElement, setAnchorElement] = createSignal<HTMLElement>();
                 const [openRename, setOpenRename] = createSignal(false);
                 const [newName, setNewName] = createSignal("");
+
                 const handleClose = () => {
                     setAnchorElement();
                 };
+
                 const renameTitle = () => {
                     const id = titles[i()].href ? "" + i() : titles[i()].text
 
@@ -79,9 +88,10 @@ export const Navigation: VoidComponent<NavigationType> = (props) => {
                     setOpenRename(false)
                 }
 
+
                 return (
                     <AnimatedDiv
-                        class="w-96 absolute flex justify-between origin-[50% 50% 0px] touch-none p-3 bg-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md"
+                        class="w-4/5 max-w-md absolute flex justify-between origin-[50% 50% 0px] p-3 bg-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md"
                         style={{
                             "z-index": zIndex.to((z: number) => z.toString()),
                             "box-shadow": shadow.to(
@@ -96,6 +106,9 @@ export const Navigation: VoidComponent<NavigationType> = (props) => {
                         <A
                             class="grow"
                             href={titles[i()].href ?? titles[i()].text}
+                            onClick={(event: MouseEvent) => {
+                                if (openRename()) event.preventDefault()
+                            }}
                         >
                             <Show
                                 when={openRename()}
@@ -131,7 +144,7 @@ export const Navigation: VoidComponent<NavigationType> = (props) => {
 
                         </A>
                         <div class="flex flex-row">
-                            <span class="flex select-none touch-none items-center"><HiOutlineBars3 /></span>
+                            <span class="flex select-none touch-none items-center grab-bars"><HiOutlineBars3 class="grab-bars-svg" /></span>
                             <button
                                 onClick={(event) => setAnchorElement(event.currentTarget)}
                             >
@@ -149,8 +162,10 @@ export const Navigation: VoidComponent<NavigationType> = (props) => {
                                 }}>Zbriši</MenuItem>
                                 <MenuItem onClick={() => {
                                     handleClose();
-                                    if (props.rename)
+                                    if (props.rename) {
                                         setOpenRename(true)
+                                        setNewName(titles[i()].text)
+                                    }
                                 }}>Preimenuj</MenuItem>
                             </Menu>
                         </div>
@@ -159,38 +174,6 @@ export const Navigation: VoidComponent<NavigationType> = (props) => {
             }}</For>
         </div >
     )
-}
-
-const AnimatedDiv = animated("div")
-
-function clamp(value: number, min: number, max: number) {
-    return Math.min(Math.max(value, min), max)
-}
-
-function swap<T>(array: T[], moveIndex: number, toIndex: number) {
-    const item = array[moveIndex];
-    const length = array.length;
-    const diff = moveIndex - toIndex;
-
-    if (diff > 0) {
-        // move left
-        return [
-            ...array.slice(0, toIndex),
-            item,
-            ...array.slice(toIndex, moveIndex),
-            ...array.slice(moveIndex + 1, length)
-        ];
-    } else if (diff < 0) {
-        // move right
-        const targetIndex = toIndex + 1;
-        return [
-            ...array.slice(0, moveIndex),
-            ...array.slice(moveIndex + 1, targetIndex),
-            item,
-            ...array.slice(targetIndex, length)
-        ];
-    }
-    return array;
 }
 
 function getSpringsProps(
@@ -227,6 +210,38 @@ function getSpringsProps(
     }
 
     return func;
+}
+
+const AnimatedDiv = animated("div")
+
+function clamp(value: number, min: number, max: number) {
+    return Math.min(Math.max(value, min), max)
+}
+
+function swap<T>(array: T[], moveIndex: number, toIndex: number) {
+    const item = array[moveIndex];
+    const length = array.length;
+    const diff = moveIndex - toIndex;
+
+    if (diff > 0) {
+        // move left
+        return [
+            ...array.slice(0, toIndex),
+            item,
+            ...array.slice(toIndex, moveIndex),
+            ...array.slice(moveIndex + 1, length)
+        ];
+    } else if (diff < 0) {
+        // move right
+        const targetIndex = toIndex + 1;
+        return [
+            ...array.slice(0, moveIndex),
+            ...array.slice(moveIndex + 1, targetIndex),
+            item,
+            ...array.slice(targetIndex, length)
+        ];
+    }
+    return array;
 }
 
 export type TitleType = {
