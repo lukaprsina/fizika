@@ -46,10 +46,6 @@ export const [EditToggleProvider, useEditToggle] = createContextProvider(
         // eslint-disable-next-line solid/reactivity
         const [edit, setEdit] = createSignal(props.initial);
 
-        createEffect(() => {
-            console.warn("from provider", edit())
-        })
-
         return {
             edit,
             change: setEdit

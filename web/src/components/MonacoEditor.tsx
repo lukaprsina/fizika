@@ -6,14 +6,8 @@ import { createDropzone } from "@solid-primitives/upload";
 import type monaco from 'monaco-editor'
 import Markdown from "./Markdown";
 import styles from "~/routes/[topic]/[page]/page.module.scss"
-
-/* const selection = editor().getPosition();
-
-    editor().executeEdits("file upload", [{
-        range: selection?.collapseToStart(),
-        text: "XXX",
-        forceMoveMarkers: true
-    }]) */
+import type { Scheduled } from "@solid-primitives/scheduled";
+import { debounce } from "@solid-primitives/scheduled";
 
 type MonacoEditorType = {
     active: boolean;
@@ -24,8 +18,16 @@ const [editorInitialized, setEditorInitialized] = createSignal(false);
 
 const MonacoEditor: Component<MonacoEditorType> = (props) => {
     const [editor, setEditor] = createSignal<monaco.editor.IStandaloneCodeEditor>()
+    const [content, setContent] = createSignal("");
+    const [trigger, setTrigger] = createSignal<Scheduled<[]>>();
+
     console.warn("Called Monaco Editor")
 
+    createEffect(() => {
+        const a = () => setContent(editor()?.getValue() ?? "napaka")
+        const trigger = debounce(a, 250);
+        setTrigger(() => trigger)
+    })
     const { setRef: dropzoneRef } = createDropzone({
         onDrop: async files => {
             const formData = new FormData();
@@ -58,14 +60,28 @@ const MonacoEditor: Component<MonacoEditorType> = (props) => {
                 return;
 
             const new_editor = monaco.editor.create(component as HTMLElement, {
-                value: '# editor',
+                value: props.initial,
                 language: 'markdown',
                 dragAndDrop: true,
             });
 
+            const tr = trigger();
+            if (tr)
+                tr()
+
             setEditor(new_editor);
             setEditorInitialized(false);
         });
+    })
+
+    createEffect(() => {
+        const a = () => {
+            const tr = trigger();
+            if (tr)
+                tr()
+        };
+
+        editor()?.onDidChangeModelContent(a)
     })
 
     // TODO: editor resize
@@ -81,7 +97,7 @@ const MonacoEditor: Component<MonacoEditorType> = (props) => {
                 class="flex justify-center w-1/2 h-screen flex-1"
             >
                 <div class={`${styles.page_content}`}>
-                    <Markdown markdown={props.initial} />
+                    <Markdown markdown={content()} />
                 </div>
             </div>
         </div>

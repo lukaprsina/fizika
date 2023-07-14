@@ -82,7 +82,6 @@ const TopicNavbar: Component = () => {
 
     const [, renamePage] = createServerAction$(async ({ old_title, new_title, topic_url }:
         { old_title: string, new_title: string, topic_url: string }) => {
-        console.log("server", { old_title, new_title, topic_url })
         const parsed_name = parseInt(old_title);
         if (isNaN(parsed_name)) return;
 

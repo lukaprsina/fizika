@@ -84,7 +84,6 @@ const PageTab = () => {
 
     createEffect(() => {
         const edit_bool = editToggle?.edit()
-        console.warn("from page", edit_bool)
         setShowEditor(Boolean(edit_bool))
     })
 

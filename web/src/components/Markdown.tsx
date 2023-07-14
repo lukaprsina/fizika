@@ -62,7 +62,8 @@ const components = {
 
         return <span
             class="inline"
-            ref={katex_ref} />
+            ref={katex_ref}
+        />
     }
 }
 
@@ -74,7 +75,7 @@ const Markdown: VoidComponent<MarkdownProps> = (props) => {
         if (!owner || !props.markdown)
             return;
 
-        console.log(props.markdown)
+        console.warn("Cumpiling")
 
         const code = String(compileSync(props.markdown, {
             outputFormat: 'function-body',
