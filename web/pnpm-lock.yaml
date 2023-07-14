@@ -89,6 +89,15 @@ dependencies:
   monaco-editor:
     specifier: ^0.40.0
     version: 0.40.0
+  monaco-unified:
+    specifier: ^1.2.0
+    version: 1.2.0(monaco-editor@0.40.0)
+  remark:
+    specifier: ^14.0.3
+    version: 14.0.3
+  remark-lint-heading-increment:
+    specifier: ^3.1.2
+    version: 3.1.2
   sass:
     specifier: ^1.63.6
     version: 1.63.6
@@ -5405,6 +5414,34 @@ packages:
     resolution: {integrity: sha512-1wymccLEuFSMBvCk/jT1YDW/GuxMLYwnFwF9CDyYCxoTw2Pt379J3FUhwy9c43j51JdcxVPjwk0jm0EVDsBS2g==}
     dev: false
 
+  /monaco-marker-data-provider@1.1.1(monaco-editor@0.40.0):
+    resolution: {integrity: sha512-PGB7TJSZE5tmHzkxv/OEwK2RGNC2A7dcq4JRJnnj31CUAsfmw0Gl+1QTrH0W0deKhcQmQM0YVPaqgQ+0wCt8Mg==}
+    peerDependencies:
+      monaco-editor: '>=0.30.0'
+    dependencies:
+      monaco-editor: 0.40.0
+    dev: false
+
+  /monaco-unified@1.2.0(monaco-editor@0.40.0):
+    resolution: {integrity: sha512-BSdouUSlV0IFDIcl9H3UfwJpjh1YJoos1pjZF9RhHUlWt5EqCDDj1plZiqICZlWTZyy2yWWGxxfSh7FSpItxUw==}
+    peerDependencies:
+      monaco-editor: '>=0.30.0'
+    dependencies:
+      monaco-editor: 0.40.0
+      monaco-marker-data-provider: 1.1.1(monaco-editor@0.40.0)
+      monaco-worker-manager: 2.0.1(monaco-editor@0.40.0)
+      unified: 10.1.2
+      vfile: 5.3.7
+    dev: false
+
+  /monaco-worker-manager@2.0.1(monaco-editor@0.40.0):
+    resolution: {integrity: sha512-kdPL0yvg5qjhKPNVjJoym331PY/5JC11aPJXtCZNwWRvBr6jhkIamvYAyiY5P1AWFmNOy0aRDRoMdZfa71h8kg==}
+    peerDependencies:
+      monaco-editor: '>=0.30.0'
+    dependencies:
+      monaco-editor: 0.40.0
+    dev: false
+
   /mri@1.2.0:
     resolution: {integrity: sha512-tzzskb3bG8LvYGFF/mDTpq3jpI6Q9wc3LEmBaghu+DdCssd1FakN7Bc0hVNmEyGq1bq3RgfkCb3cmQLpNPOroA==}
     engines: {node: '>=4'}
@@ -5948,6 +5985,16 @@ packages:
     dependencies:
       jsesc: 0.5.0
 
+  /remark-lint-heading-increment@3.1.2:
+    resolution: {integrity: sha512-+fMfZmFh6ie6MmbRCVW77Rha15zDmnHWKiA0Do08OTrfngPTv8ZKXYLmxhUpL+xV9ts9q+9Kz5rv0L4QD4sEwQ==}
+    dependencies:
+      '@types/mdast': 3.0.11
+      unified: 10.1.2
+      unified-lint-rule: 2.1.2
+      unist-util-generated: 2.0.1
+      unist-util-visit: 4.1.2
+    dev: false
+
   /remark-mdx@2.3.0:
     resolution: {integrity: sha512-g53hMkpM0I98MU266IzDFMrTD980gNF3BJnkyFcmN+dD873mQeD5rdMO3Y2X+x8umQfbSE0PcoEDl7ledSA+2g==}
     dependencies:
@@ -5974,6 +6021,25 @@ packages:
       '@types/mdast': 3.0.11
       mdast-util-to-hast: 12.3.0
       unified: 10.1.2
+    dev: false
+
+  /remark-stringify@10.0.3:
+    resolution: {integrity: sha512-koyOzCMYoUHudypbj4XpnAKFbkddRMYZHwghnxd7ue5210WzGw6kOBwauJTRUMq16jsovXx8dYNvSSWP89kZ3A==}
+    dependencies:
+      '@types/mdast': 3.0.11
+      mdast-util-to-markdown: 1.5.0
+      unified: 10.1.2
+    dev: false
+
+  /remark@14.0.3:
+    resolution: {integrity: sha512-bfmJW1dmR2LvaMJuAnE88pZP9DktIFYXazkTfOIKZzi3Knk9lT0roItIA24ydOucI3bV/g/tXBA6hzqq3FV9Ew==}
+    dependencies:
+      '@types/mdast': 3.0.11
+      remark-parse: 10.0.2
+      remark-stringify: 10.0.3
+      unified: 10.1.2
+    transitivePeerDependencies:
+      - supports-color
     dev: false
 
   /require-directory@2.1.1:
@@ -6691,6 +6757,15 @@ packages:
   /unicode-property-aliases-ecmascript@2.1.0:
     resolution: {integrity: sha512-6t3foTQI9qne+OZoVQB/8x8rk2k1eVy1gRXhV3oFQ5T6R1dqQ1xtin3XqSlx3+ATBkliTaR/hHyJBm+LVPNM8w==}
     engines: {node: '>=4'}
+
+  /unified-lint-rule@2.1.2:
+    resolution: {integrity: sha512-JWudPtRN7TLFHVLEVZ+Rm8FUb6kCAtHxEXFgBGDxRSdNMnGyTU5zyYvduHSF/liExlFB3vdFvsAHnNVE/UjAwA==}
+    dependencies:
+      '@types/unist': 2.0.6
+      trough: 2.1.0
+      unified: 10.1.2
+      vfile: 5.3.7
+    dev: false
 
   /unified@10.1.2:
     resolution: {integrity: sha512-pUSWAi/RAnVy1Pif2kAoeWNBa3JVrx0MId2LASj8G+7AiHWoKZNTomq6LG326T68U7/e263X6fTdcXIy7XnF7Q==}

@@ -4,6 +4,8 @@ import { createSignal } from "solid-js";
 import loader from '@monaco-editor/loader';
 import { createDropzone } from "@solid-primitives/upload";
 import type monaco from 'monaco-editor'
+import Markdown from "./Markdown";
+import styles from "~/routes/[topic]/[page]/page.module.scss"
 
 /* const selection = editor().getPosition();
 
@@ -15,6 +17,7 @@ import type monaco from 'monaco-editor'
 
 type MonacoEditorType = {
     active: boolean;
+    initial?: string;
 };
 
 const [editorInitialized, setEditorInitialized] = createSignal(false);
@@ -65,12 +68,24 @@ const MonacoEditor: Component<MonacoEditorType> = (props) => {
         });
     })
 
-    return <div
-        id="editor"
-        ref={dropzoneRef}
-        class="w-full h-screen"
-    // class="w-screen h-screen"
-    />
+    // TODO: editor resize
+
+    return (
+        <div class="w-full h-full flex flex-row">
+            <div
+                id="editor"
+                ref={dropzoneRef}
+                class="w-1/2 h-screen flex-1"
+            />
+            <div
+                class="flex justify-center w-1/2 h-screen flex-1"
+            >
+                <div class={`${styles.page_content}`}>
+                    <Markdown markdown={props.initial} />
+                </div>
+            </div>
+        </div>
+    )
 }
 
 export default MonacoEditor;

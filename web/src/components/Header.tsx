@@ -12,6 +12,10 @@ const Header: Component<HeaderType> = (props) => {
     const editToggle = useEditToggle();
     const darkToggle = useThemeToggle();
 
+    createEffect(() => {
+        console.warn("from header", editToggle?.edit())
+    })
+
     return (
         <div
             class="flex justify-between items-center h-16 w-full px-4"

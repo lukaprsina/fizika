@@ -69,92 +69,99 @@ type ParamsType = {
 }
 
 const Page: VoidComponent = () => {
+    return (
+        <Providers>
+            <PageTab />
+        </Providers>
+    )
+}
+
+const PageTab = () => {
     const page_data = useRouteData<typeof routeData>();
     const params = useParams<ParamsType>();
     const editToggle = useEditToggle();
     const [showEditor, setShowEditor] = createSignal(false);
 
     createEffect(() => {
-        setShowEditor(Boolean(editToggle?.edit()))
+        const edit_bool = editToggle?.edit()
+        console.warn("from page", edit_bool)
+        setShowEditor(Boolean(edit_bool))
     })
 
     return (
-        <Providers>
-            <TabsContext defaultIndex={1}>{({ activeTab, setActiveTab }) => <>
-                <TabButtonsContainer>
-                    <TabButton
-                        activeTab={activeTab}
-                        setActiveTab={setActiveTab}
-                        index={0}
-                    >
-                        Navbar
-                    </TabButton>
-                    <TabButton
-                        activeTab={activeTab}
-                        setActiveTab={setActiveTab}
-                        index={1}
-                    >
-                        Page
-                    </TabButton>
-                    <TabButton
-                        activeTab={activeTab}
-                        setActiveTab={setActiveTab}
-                        index={2}
-                    >
-                        Explanation
-                    </TabButton>
-                </TabButtonsContainer>
-                <AppShellHeader>
-                    <Header topic={decodeURIComponent(params.topic)} name={page_data()?.session?.user?.name} />
-                </AppShellHeader>
-                <AppShellContent>
-                    <Tab
-                        activeTab={activeTab}
-                        index={0}
-                    >
-                        Navbar
-                    </Tab>
-                    <Tab
-                        activeTab={activeTab}
-                        index={1}
-                        hidden={showEditor()}
-                    >
-                        <Show when={page_data()?.page?.markdown}>
-                            <div
-                                class="flex justify-center"
-                            >
-                                <div
-                                    class={styles.page_content}
-                                >
-                                    <Markdown markdown={page_data()?.page?.markdown} />
-                                </div>
+        <TabsContext defaultIndex={1}>{({ activeTab, setActiveTab }) => <>
+            <TabButtonsContainer>
+                <TabButton
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    index={0}
+                >
+                    Navbar
+                </TabButton>
+                <TabButton
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    index={1}
+                >
+                    Page
+                </TabButton>
+                <TabButton
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    index={2}
+                >
+                    Explanation
+                </TabButton>
+            </TabButtonsContainer>
+            <AppShellHeader>
+                <Header topic={decodeURIComponent(params.topic)} name={page_data()?.session?.user?.name} />
+            </AppShellHeader>
+            <AppShellContent>
+                <Tab
+                    activeTab={activeTab}
+                    index={0}
+                >
+                    Navbar
+                </Tab>
+                <Tab
+                    activeTab={activeTab}
+                    index={1}
+                    hidden={showEditor()}
+                >
+                    <Show when={page_data()?.page?.markdown}>
+                        <div
+                            class="w-full h-full flex justify-center"
+                        >
+                            <div class={`${styles.page_content}`}>
+                                <Markdown markdown={page_data()?.page?.markdown} />
                             </div>
-                        </Show>
-                        {/* <FileManager page={page_data()?.page ?? undefined} /> */}
-                        <NavButtons
-                            keyboard={false}
-                            page_count={page_data()?.page_count ?? 0}
-                        />
-                    </Tab>
-                    <Tab
-                        activeTab={activeTab}
-                        index={1}
-                        hidden={!showEditor()}
-                    >
-                        <MonacoEditor
-                            active={activeTab() == 1 && showEditor()}
-                        />
-                        <NavButtons page_count={page_data()?.page_count ?? 0} />
-                    </Tab>
-                    <Tab
-                        activeTab={activeTab}
-                        index={2}
-                    >
-                        Explanation
-                    </Tab>
-                </AppShellContent>
-            </>}</TabsContext>
-        </Providers>
+                        </div>
+                    </Show>
+                    {/* <FileManager page={page_data()?.page ?? undefined} /> */}
+                    <NavButtons
+                        keyboard={false}
+                        page_count={page_data()?.page_count ?? 0}
+                    />
+                </Tab>
+                <Tab
+                    activeTab={activeTab}
+                    index={1}
+                    hidden={!showEditor()}
+                >
+                    <MonacoEditor
+                        active={activeTab() == 1 && showEditor()}
+                        initial={page_data()?.page?.markdown}
+                    />
+                    <NavButtons page_count={page_data()?.page_count ?? 0} />
+                </Tab>
+                <Tab
+                    activeTab={activeTab}
+                    index={2}
+                >
+                    Explanation
+                </Tab>
+            </AppShellContent>
+        </>}</TabsContext>
     )
 }
 

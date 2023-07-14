@@ -6,6 +6,7 @@ import { renderMathInElement } from "mathlive"
 import { createStore } from "solid-js/store";
 import "mathlive/static.css"
 
+// use @solid-primitives/context
 export const compute_engine = new ComputeEngine();
 type RenderFuncType = () => void;
 
