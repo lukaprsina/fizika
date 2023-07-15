@@ -5,8 +5,8 @@ import { useRouteData } from "solid-start";
 import { createServerData$, createServerAction$ } from "solid-start/server";
 import Footer from "~/components/Footer";
 import Header from "~/components/Header";
-import type { TitleType } from "~/components/Navigation";
-import { Navigation } from "~/components/Navigation";
+import type { ItemType } from "~/components/List";
+import { List } from "~/components/List";
 import Providers, { AppShellContent, AppShellFooter, AppShellHeader } from "~/layouts/Providers";
 import { authOptions } from "~/server/auth";
 import { prisma } from "~/server/db"
@@ -32,7 +32,7 @@ export function routeData() {
 
 const Home: VoidComponent = () => {
     const data = useRouteData<typeof routeData>();
-    const [topics, setTopics] = createSignal<TitleType[]>([]);
+    const [topics, setTopics] = createSignal<ItemType[]>([]);
 
     const [, moveTopicToTrash] = createServerAction$(async (name: string) => {
         await prisma.topic.update({ where: { title: name }, data: { active: false } })
@@ -57,7 +57,7 @@ const Home: VoidComponent = () => {
                 <Header name={data()?.session?.user?.name} />
             </AppShellHeader>
             <AppShellContent>
-                <Navigation
+                <List
                     titles={topics()}
                     delete={moveTopicToTrash}
                     rename={(old_title, new_title) => {

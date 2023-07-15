@@ -9,15 +9,15 @@ import { HiOutlineEllipsisVertical, HiOutlineBars3, HiOutlineCheck } from "solid
 
 const TITLE_HEIGHT = 52;
 
-export type NavigationType = {
-    titles: TitleType[];
+export type ListType = {
+    titles: ItemType[];
     delete?: (title: string) => Promise<void>;
     rename?: (old_title: string, new_title: string) => Promise<void>;
 }
 
-export const Navigation: VoidComponent<NavigationType> = (props) => {
+export const List: VoidComponent<ListType> = (props) => {
     const [order, setOrder] = createSignal<number[]>([]);
-    const [titles, setTitles] = createStore<TitleType[]>([]);
+    const [titles, setTitles] = createStore<ItemType[]>([]);
 
     const [springs, setSprings] = createSignal<{
         springs: Accessor<SpringType[]> & {
@@ -244,7 +244,7 @@ function swap<T>(array: T[], moveIndex: number, toIndex: number) {
     return array;
 }
 
-export type TitleType = {
+export type ItemType = {
     text: string;
     href?: string;
     ref?: HTMLDivElement

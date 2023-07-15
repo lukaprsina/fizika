@@ -72,10 +72,8 @@ const Markdown: VoidComponent<MarkdownProps> = (props) => {
     const owner = getOwner();
 
     createEffect(() => {
-        if (!owner || !props.markdown)
+        if (!owner || typeof props.markdown != "string")
             return;
-
-        console.warn("Cumpiling")
 
         const code = String(compileSync(props.markdown, {
             outputFormat: 'function-body',

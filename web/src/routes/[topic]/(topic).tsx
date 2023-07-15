@@ -6,8 +6,8 @@ import { useParams, useRouteData } from "solid-start";
 import { createServerAction$, createServerData$ } from "solid-start/server";
 import Footer from "~/components/Footer";
 import Header from "~/components/Header";
-import type { TitleType } from "~/components/Navigation";
-import { Navigation } from "~/components/Navigation";
+import type { ItemType } from "~/components/List";
+import { List } from "~/components/List";
 import Providers, { AppShellContent, AppShellFooter, AppShellHeader } from "~/layouts/Providers";
 import { authOptions } from "~/server/auth";
 import { prisma } from "~/server/db"
@@ -52,7 +52,7 @@ type ParamsType = {
 
 const TopicNavbar: Component = () => {
     const topic_data = useRouteData<typeof routeData>();
-    const [pages, setPages] = createSignal<TitleType[]>([]);
+    const [pages, setPages] = createSignal<ItemType[]>([]);
     const params = useParams<ParamsType>();
 
     const [, movePageToTrash] = createServerAction$(async ({ title, topic_url }: {
@@ -121,7 +121,7 @@ const TopicNavbar: Component = () => {
                 <Header topic={decodeURIComponent(params.topic)} name={topic_data()?.session?.user?.name} />
             </AppShellHeader>
             <AppShellContent>
-                <Navigation
+                <List
                     titles={pages()}
                     delete={(title) => {
                         movePageToTrash({
