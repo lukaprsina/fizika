@@ -79,7 +79,7 @@
     "zod": "^3.21.4"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
