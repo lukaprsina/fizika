@@ -2,12 +2,13 @@ import solid from "solid-start/vite";
 import { defineConfig } from "vite";
 import copy from 'rollup-plugin-copy'
 import suid from "@suid/vite-plugin";
+import vercel from "solid-start-vercel";
 
 export default defineConfig(() => {
   return {
     plugins: [
       suid(),
-      solid({ ssr: true }),
+      solid({ ssr: true, adapter: vercel({ edge: false }) }),
       copy({
         targets: [
           {
