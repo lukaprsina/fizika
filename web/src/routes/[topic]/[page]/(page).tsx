@@ -2,7 +2,7 @@ import { createShortcut } from "@solid-primitives/keyboard";
 import { Button } from "solid-headless";
 import { HiOutlineArrowLeft, HiOutlineArrowRight } from 'solid-icons/hi';
 import type { VoidComponent, ParentComponent } from "solid-js";
-import { mergeProps } from "solid-js";
+import { lazy, mergeProps } from "solid-js";
 import { createEffect, createSignal, Show } from "solid-js";
 import type { RouteDataArgs } from "solid-start";
 import { A, useNavigate, useParams, useRouteData } from "solid-start";
@@ -11,12 +11,13 @@ import Header from "~/components/Header";
 import { Tab, TabButton, TabButtonsContainer, TabsContext } from "~/components/Tabs";
 import Providers, { AppShellContent, AppShellHeader, useEditToggle } from "~/layouts/Providers";
 import styles from "./page.module.scss"
-import MonacoEditor from "~/components/MonacoEditor";
 import { prisma } from "~/server/db"
 import { authOptions } from "~/server/auth";
 import { getSession } from "@solid-auth/base";
 import type { Page as PageType } from "@prisma/client";
 import Markdown from "~/components/Markdown";
+
+const MonacoEditor = lazy(() => import("~/components/MonacoEditor"));
 
 export function routeData({ params }: RouteDataArgs) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

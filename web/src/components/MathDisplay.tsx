@@ -2,7 +2,6 @@ import type { ParentComponent, Accessor } from "solid-js";
 import { createContext, createEffect, createSignal, useContext, type VoidComponent } from "solid-js"
 import type { IdTable, SymbolDefinition } from "@cortex-js/compute-engine";
 import { ComputeEngine } from "@cortex-js/compute-engine"
-import { renderMathInElement } from "mathlive"
 import { createStore } from "solid-js/store";
 import "mathlive/static.css"
 
@@ -115,13 +114,14 @@ export const Equation: VoidComponent<EquationProps> = (props) => {
     const [variables, { edit_or_add }] = system;
 
     createEffect(() => {
-        const render = (latex: string) => {
+        const render = async (latex: string) => {
             // ** Default **: `{display: [ ['$$', '$$'], ['\\[', '\\]'] ] ], inline: [ ['\\(','\\)'] ] ]}`            
             if (props.full)
                 math_element.innerHTML = `\$\$${latex}\$\$`;
             else
                 math_element.innerHTML = `\\begin{math}${latex}\\end{math}`;
 
+            const { renderMathInElement } = await import("mathlive");
             renderMathInElement(math_element)
         }
 
