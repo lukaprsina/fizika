@@ -1,9 +1,8 @@
 // @refresh reload
 import { createContextProvider } from "@solid-primitives/context";
 import { usePrefersDark } from "@solid-primitives/media";
-import type { CookieOptions, StorageSetter } from "@solid-primitives/storage";
-import { cookieStorage, createStorage } from "@solid-primitives/storage";
-import type { ParentComponent } from "solid-js";
+import { makePersisted } from "@solid-primitives/storage";
+import type { ParentComponent, Setter } from "solid-js";
 import { createEffect, createSignal } from "solid-js";
 
 export const AppShellHeader: ParentComponent = (props) => {
@@ -55,7 +54,7 @@ export const [EditToggleProvider, useEditToggle] = createContextProvider(
 
 type ThemeType = {
     dark: boolean;
-    setCookies: StorageSetter<string, CookieOptions>
+    setTheme: Setter<string>
 }
 
 export const [ThemeToggleProvider, useThemeToggle] = createContextProvider(
@@ -66,11 +65,11 @@ export const [ThemeToggleProvider, useThemeToggle] = createContextProvider(
         createEffect(() => {
             if (dark()) {
                 document.documentElement.classList.add('dark')
-                props.setCookies("theme", "dark")
+                props.setTheme("dark")
             }
             else {
                 document.documentElement.classList.remove('dark')
-                props.setCookies("theme", "light")
+                props.setTheme("light")
             }
         });
 
@@ -85,21 +84,19 @@ export const [ThemeToggleProvider, useThemeToggle] = createContextProvider(
 );
 
 const Providers: ParentComponent = (props) => {
-    const [cookies, setCookies] = createStorage({
-        api: cookieStorage,
-        prefix: "fizika-scnm",
-        options: {
-            sameSite: "Strict",
-        }
-    })
+    const prefersDark = usePrefersDark();
+    // eslint-disable-next-line solid/reactivity
+    const [theme, setTheme] = makePersisted(createSignal(
+        prefersDark() ? "dark" : "light"
+    ), { name: "theme" });
 
-    if (!cookies.theme) {
-        const prefersDark = usePrefersDark();
-        setCookies("theme", prefersDark() ? "dark" : "light");
-    }
+    /*     if (!cookies.theme) {
+            const prefersDark = usePrefersDark();
+            setCookies("theme", prefersDark() ? "dark" : "light");
+        } */
 
     return (
-        <ThemeToggleProvider dark={cookies.theme == "dark"} setCookies={setCookies}>
+        <ThemeToggleProvider dark={theme() == "dark"} setTheme={setTheme}>
             <EditToggleProvider initial={false}>
                 <div class="flex min-h-screen flex-col bg-white dark:text-white dark:bg-neutral-900">
                     {props.children}

@@ -107,11 +107,12 @@ const TopicNavbar: Component = () => {
         const page_data = topic_data()?.pages
         if (!page_data) return;
 
-        // TODO: page title
         const parsed_pages = page_data.map((page) => ({
-            text: page.title ?? "",
+            content: page.title ?? "Stran " + page.id.toString(),
+            id: page.id.toString(),
             href: page.id.toString()
         }))
+
         setPages(parsed_pages)
     })
 

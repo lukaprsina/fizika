@@ -32,23 +32,23 @@ const Account: VoidComponent = () => {
                         fallback={<div>
                             <p>
                                 <button
-                                    onClick={() => {
-                                        signIn(undefined, { redirectTo: "/" })
+                                    onClick={async () => {
+                                        await signIn(undefined, { redirect: true, redirectTo: "/" })
                                     }}
                                 >
-                                    Login
+                                    Prijava
                                 </button>
                             </p>
                         </div>}
                     >
                         <div class="flex flex-col items-start">
-                            <span>Živjo {user()?.user?.name}</span>
+                            <span>{user()?.user?.name}</span>
                             <button
-                                onClick={() =>
-                                    signOut({ redirectTo: "/" })
+                                onClick={async () =>
+                                    await signOut({ redirect: true, redirectTo: "/" })
                                 }
                             >
-                                Log Out
+                                Odjava
                             </button>
                         </div>
                     </Show>

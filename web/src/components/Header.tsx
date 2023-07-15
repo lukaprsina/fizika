@@ -1,5 +1,5 @@
 import type { Component } from "solid-js";
-import { Show, createEffect } from "solid-js";
+import { Show } from "solid-js";
 import { A } from "solid-start";
 import { useEditToggle, useThemeToggle } from "~/layouts/Providers";
 
@@ -48,7 +48,7 @@ const Header: Component<HeaderType> = (props) => {
                             onChange={() => editToggle?.change(!editToggle.edit())}
                         />
                             Edit</label>
-                        <span>{props.name}</span>
+                        <A href="/account">{props.name}</A>
                     </Show>
                 </div>
             </div>

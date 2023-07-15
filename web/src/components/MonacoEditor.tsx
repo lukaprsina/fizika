@@ -8,6 +8,7 @@ import Markdown from "./Markdown";
 import styles from "~/routes/[topic]/[page]/page.module.scss"
 import type { Scheduled } from "@solid-primitives/scheduled";
 import { debounce } from "@solid-primitives/scheduled";
+import { useThemeToggle } from "~/layouts/Providers";
 
 type MonacoEditorType = {
     active: boolean;
@@ -16,10 +17,13 @@ type MonacoEditorType = {
 
 const [editorInitialized, setEditorInitialized] = createSignal(false);
 
+// TODO: when switching pages in edit mode
+// accept props.markdown
 const MonacoEditor: Component<MonacoEditorType> = (props) => {
     const [editor, setEditor] = createSignal<monaco.editor.IStandaloneCodeEditor>()
     const [content, setContent] = createSignal("");
     const [trigger, setTrigger] = createSignal<Scheduled<[]>>();
+    const theme = useThemeToggle()
 
     console.warn("Called Monaco Editor")
 
@@ -28,6 +32,7 @@ const MonacoEditor: Component<MonacoEditorType> = (props) => {
         const trigger = debounce(a, 250);
         setTrigger(() => trigger)
     })
+
     const { setRef: dropzoneRef } = createDropzone({
         onDrop: async files => {
             const formData = new FormData();
@@ -63,6 +68,8 @@ const MonacoEditor: Component<MonacoEditorType> = (props) => {
                 value: props.initial,
                 language: 'markdown',
                 dragAndDrop: true,
+                automaticLayout: true,
+                theme: theme?.dark() ? "vs-dark" : "vs"
             });
 
             const tr = trigger();
@@ -72,6 +79,12 @@ const MonacoEditor: Component<MonacoEditorType> = (props) => {
             setEditor(new_editor);
             setEditorInitialized(false);
         });
+    })
+
+    createEffect(() => {
+        editor()?.updateOptions({
+            theme: theme?.dark() ? "vs-dark" : "vs"
+        })
     })
 
     createEffect(() => {
@@ -96,7 +109,7 @@ const MonacoEditor: Component<MonacoEditorType> = (props) => {
             <div
                 class="flex justify-center w-1/2 h-screen flex-1"
             >
-                <div class={`${styles.page_content}`}>
+                <div class={`overflow-scroll ${styles.page_content}`}>
                     <Markdown markdown={content()} />
                 </div>
             </div>

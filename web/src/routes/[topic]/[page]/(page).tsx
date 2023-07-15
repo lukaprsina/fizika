@@ -87,6 +87,10 @@ const PageTab = () => {
         setShowEditor(Boolean(edit_bool))
     })
 
+    createEffect(() => {
+        console.log(page_data()?.page?.id)
+    })
+
     return (
         <TabsContext defaultIndex={1}>{({ activeTab, setActiveTab }) => <>
             <TabButtonsContainer>
@@ -185,7 +189,6 @@ const NavButtons: VoidComponent<NavButtonsType> = (props) => {
     createShortcut(
         ["ARROWLEFT"],
         () => {
-            // TODO: doesn't work
             if (merged.keyboard && pageId() > 0) {
                 navigate(baseURL() + (pageId() - 1))
             }

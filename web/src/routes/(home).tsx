@@ -47,7 +47,12 @@ const Home: VoidComponent = () => {
         const topics = data()?.topics
         if (!topics) return;
 
-        const titles = topics.map((topic) => ({ text: topic.title }))
+        const titles = topics.map((topic) => ({
+            content: topic.title,
+            id: topic.title,
+            href: topic.title
+        }))
+
         setTopics(titles)
     })
 

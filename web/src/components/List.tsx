@@ -1,13 +1,21 @@
 import { DragGesture } from "@use-gesture/vanilla";
-import type { Accessor } from "solid-js";
-import { For, createSignal, type VoidComponent, createEffect, batch, Show } from "solid-js";
+import type { Accessor, JSX, Setter } from "solid-js";
+import { For, createSignal, type VoidComponent, createEffect, batch, Show, Match, Switch } from "solid-js";
 import { createStore } from "solid-js/store";
 import { animated, config, createSprings } from "solid-spring";
 import { A } from "solid-start";
 import { Menu, MenuItem, TextField } from "@suid/material"
 import { HiOutlineEllipsisVertical, HiOutlineBars3, HiOutlineCheck } from "solid-icons/hi"
+import { useEditToggle } from "~/layouts/Providers";
 
 const TITLE_HEIGHT = 52;
+
+export type ItemType = {
+    id: string;
+    content: string | JSX.Element;
+    href?: string;
+    ref?: HTMLDivElement
+};
 
 export type ListType = {
     titles: ItemType[];
@@ -18,7 +26,7 @@ export type ListType = {
 export const List: VoidComponent<ListType> = (props) => {
     const [order, setOrder] = createSignal<number[]>([]);
     const [titles, setTitles] = createStore<ItemType[]>([]);
-
+    const edit = useEditToggle();
     const [springs, setSprings] = createSignal<{
         springs: Accessor<SpringType[]> & {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -75,23 +83,19 @@ export const List: VoidComponent<ListType> = (props) => {
                 const [anchorElement, setAnchorElement] = createSignal<HTMLElement>();
                 const [openRename, setOpenRename] = createSignal(false);
                 const [newName, setNewName] = createSignal("");
+                const [href, setHref] = createSignal<string | undefined>();
+
+                createEffect(() => {
+                    setHref(() => titles[i()].href);
+                })
 
                 const handleClose = () => {
                     setAnchorElement();
                 };
 
-                const renameTitle = () => {
-                    const id = titles[i()].href ? "" + i() : titles[i()].text
-
-                    if (props.rename)
-                        props.rename(id, newName())
-                    setOpenRename(false)
-                }
-
-
                 return (
                     <AnimatedDiv
-                        class="w-4/5 max-w-md absolute flex justify-between origin-[50% 50% 0px] p-3 bg-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md"
+                        class="w-4/5 max-w-md absolute flex justify-between origin-[50% 50% 0px] p-3 bg-slate-100 hover:bg-slate-50 dark:bg-slate-700 dark:hover:bg-slate-800 rounded-md"
                         style={{
                             "z-index": zIndex.to((z: number) => z.toString()),
                             "box-shadow": shadow.to(
@@ -103,76 +107,131 @@ export const List: VoidComponent<ListType> = (props) => {
                         tabIndex={-1}
                         ref={(ref: HTMLDivElement) => setTitles([i()], "ref", ref)}
                     >
-                        <A
-                            class="grow"
-                            href={titles[i()].href ?? titles[i()].text}
-                            onClick={(event: MouseEvent) => {
-                                if (openRename()) event.preventDefault()
-                            }}
-                        >
-                            <Show
-                                when={openRename()}
-                                fallback={titles[i()].text}
-                            >
-                                <div class="flex flex-row">
-                                    <TextField
-                                        inputProps={{
-                                            "onClick": (event: MouseEvent) => event.preventDefault(),
-                                            "onKeyUp": (event: KeyboardEvent) => {
-                                                if (event.key == "Enter") {
-                                                    event.preventDefault();
-                                                    renameTitle()
-                                                    event.preventDefault();
-                                                }
-                                            }
-                                        }}
-                                        onChange={(name) => setNewName(name.target.value)}
-                                        label="New title"
-                                        size="small"
-                                        defaultValue={titles[i()].text}
+                        <Switch>
+                            <Match when={href()}>
+                                <A
+                                    class="grow"
+                                    href={href()!}
+                                    onClick={(event: MouseEvent) => {
+                                        if (openRename()) event.preventDefault()
+                                    }}
+                                >
+                                    <Content
+                                        rename={props.rename}
+                                        newName={newName}
+                                        setNewName={setNewName}
+                                        openRename={openRename}
+                                        setOpenRename={setOpenRename}
+                                        title={titles[i()]}
                                     />
-                                    <button
-                                        onClick={(event: MouseEvent) => {
-                                            event.preventDefault();
-                                            renameTitle();
-                                        }}
-                                        class="px-2">
-                                        <HiOutlineCheck size="20px" />
-                                    </button>
+                                </A>
+                            </Match>
+                            <Match when={!href()}>
+                                <div
+                                    class="grow"
+                                    onClick={(event: MouseEvent) => {
+                                        if (openRename()) event.preventDefault()
+                                    }}
+                                >
+                                    <Content
+                                        rename={props.rename}
+                                        newName={newName}
+                                        setNewName={setNewName}
+                                        openRename={openRename}
+                                        setOpenRename={setOpenRename}
+                                        title={titles[i()]}
+                                    />
                                 </div>
-                            </Show>
+                            </Match>
+                        </Switch>
 
-                        </A>
-                        <div class="flex flex-row">
-                            <span class="flex select-none touch-none items-center grab-bars"><HiOutlineBars3 class="grab-bars-svg" /></span>
-                            <button
-                                onClick={(event) => setAnchorElement(event.currentTarget)}
-                            >
-                                <HiOutlineEllipsisVertical />
-                            </button>
-                            <Menu
-                                anchorEl={anchorElement()}
-                                open={Boolean(anchorElement())}
-                                onClose={handleClose}
-                            >
-                                <MenuItem onClick={() => {
-                                    handleClose();
-                                    if (props.delete)
-                                        props.delete(titles[i()].href ?? titles[i()].text)
-                                }}>Zbriši</MenuItem>
-                                <MenuItem onClick={() => {
-                                    handleClose();
-                                    if (props.rename) {
-                                        setOpenRename(true)
-                                        setNewName(titles[i()].text)
-                                    }
-                                }}>Preimenuj</MenuItem>
-                            </Menu>
-                        </div>
+                        <Show
+                            when={edit?.edit()}
+                        >
+                            <div class="flex flex-row">
+                                <span class="flex select-none touch-none items-center grab-bars"><HiOutlineBars3 class="grab-bars-svg" /></span>
+                                <button
+                                    onClick={(event) => setAnchorElement(event.currentTarget)}
+                                >
+                                    <HiOutlineEllipsisVertical />
+                                </button>
+                                <Menu
+                                    anchorEl={anchorElement()}
+                                    open={Boolean(anchorElement())}
+                                    onClose={handleClose}
+                                >
+                                    <MenuItem onClick={() => {
+                                        handleClose();
+                                        if (props.delete)
+                                            props.delete(titles[i()].href ?? titles[i()].id)
+                                    }}>Zbriši</MenuItem>
+                                    <MenuItem onClick={() => {
+                                        handleClose();
+                                        if (props.rename) {
+                                            setOpenRename(true)
+                                            setNewName(titles[i()].id)
+                                        }
+                                    }}>Preimenuj</MenuItem>
+                                </Menu>
+                            </div>
+                        </Show>
                     </AnimatedDiv>
                 )
             }}</For>
         </div >
+    )
+}
+
+type ContentType = {
+    rename?: (old_title: string, new_title: string) => Promise<void>;
+    newName: Accessor<string>;
+    setNewName: Setter<string>;
+    openRename: Accessor<boolean>;
+    setOpenRename: Setter<boolean>;
+    title: ItemType;
+};
+
+const Content: VoidComponent<ContentType> = (props) => {
+    const editToggle = useEditToggle();
+
+    const renameTitle = () => {
+        if (props.rename)
+            props.rename(props.title.id, props.newName())
+        props.setOpenRename(false)
+    }
+
+    return (
+        <Show
+            when={editToggle?.edit() && props.openRename()}
+            fallback={props.title.content}
+        >
+            <div class="flex flex-row">
+                <TextField
+                    inputProps={{
+                        "onClick": (event: MouseEvent) => event.preventDefault(),
+                        "onKeyUp": (event: KeyboardEvent) => {
+                            if (event.key == "Enter") {
+                                event.preventDefault();
+                                renameTitle()
+                                event.preventDefault();
+                            }
+                        }
+                    }}
+                    onChange={(name) => props.setNewName(name.target.value)}
+                    label="New title"
+                    size="small"
+                    defaultValue={props.title.content}
+                />
+                <button
+                    onClick={(event: MouseEvent) => {
+                        event.preventDefault();
+                        renameTitle();
+                    }}
+                    class="px-2">
+                    <HiOutlineCheck size="20px" />
+                </button>
+            </div>
+        </Show>
     )
 }
 
@@ -243,12 +302,6 @@ function swap<T>(array: T[], moveIndex: number, toIndex: number) {
     }
     return array;
 }
-
-export type ItemType = {
-    text: string;
-    href?: string;
-    ref?: HTMLDivElement
-};
 
 type SpringType = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

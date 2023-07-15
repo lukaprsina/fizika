@@ -1,8 +1,8 @@
-import { Component, createEffect, createMemo } from "solid-js";
-import { Show } from "solid-js";
-import { For, createSignal } from "solid-js"
+import type { Component } from "solid-js";
+import { createMemo } from "solid-js";
+import { createSignal } from "solid-js"
 import { createDropzone } from "@solid-primitives/upload"
-import { A, useParams } from "solid-start";
+import { useParams } from "solid-start";
 import type { Page } from "@prisma/client";
 import { List } from "./List";
 
