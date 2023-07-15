@@ -25,7 +25,7 @@ const MonacoEditor: Component<MonacoEditorType> = (props) => {
     const [trigger, setTrigger] = createSignal<Scheduled<[]>>();
     const theme = useThemeToggle()
 
-    console.warn("Called Monaco Editor")
+    // console.warn("Called Monaco Editor")
 
     createEffect(() => {
         const a = () => setContent(editor()?.getValue() ?? "napaka")
