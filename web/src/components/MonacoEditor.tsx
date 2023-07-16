@@ -109,7 +109,7 @@ const MonacoEditor: Component<MonacoEditorType> = (props) => {
             <div
                 class="flex justify-center w-1/2 h-screen flex-1"
             >
-                <div class={`overflow-scroll ${styles.page_content}`}>
+                <div class={`overflow-scroll w-full flex justify-center ${styles.page_content}`}>
                     <Markdown markdown={content()} />
                 </div>
             </div>

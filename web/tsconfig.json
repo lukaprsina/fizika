@@ -9,7 +9,9 @@
     "jsxImportSource": "solid-js",
     "jsx": "preserve",
     "types": [
-      "solid-start/env"
+      "solid-start/env",
+      "solid-jsx/types",
+      "vite/client"
     ],
     "baseUrl": "./",
     "paths": {

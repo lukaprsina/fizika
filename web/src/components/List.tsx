@@ -49,7 +49,7 @@ export const List: VoidComponent<ListType> = (props) => {
         if (!spr) return;
 
         titles.forEach((title, originalIndex) => {
-            if (!title.ref) return;
+            if (!title.ref || !edit?.edit()) return;
 
             const targets = title.ref.getElementsByClassName("grab-bars")
             if (targets.length != 1) return;

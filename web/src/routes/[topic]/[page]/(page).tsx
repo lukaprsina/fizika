@@ -136,7 +136,7 @@ const PageTab = () => {
                         <div
                             class="w-full h-full flex justify-center"
                         >
-                            <div class={`${styles.page_content}`}>
+                            <div class={`overflow-scroll w-full flex justify-center ${styles.page_content}`}>
                                 <Markdown markdown={page_data()?.page?.markdown} />
                             </div>
                         </div>

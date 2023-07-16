@@ -33,7 +33,7 @@ const Account: VoidComponent = () => {
                             <p>
                                 <button
                                     onClick={async () => {
-                                        await signIn(undefined, { redirect: true, redirectTo: "/" })
+                                        await signIn("google", { redirect: true, redirectTo: "/" })
                                     }}
                                 >
                                     Prijava

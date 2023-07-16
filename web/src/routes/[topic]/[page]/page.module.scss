@@ -1,23 +1,18 @@
 .page_content {
     max-width: 1100px;
-}
 
-.page_content a {
-    text-decoration: revert;
-    color: revert;
-}
-
-.page_content>div>* {
-    // border: 1px solid red;
-    margin-bottom: 20px;
-}
-
-.page_content figure {
-    figcaption {
-        margin-top: 10px;
+    a {
+        text-decoration: revert;
+        color: revert;
     }
 
-    img {
-        width: 100%;
+    figure {
+        figcaption {
+            margin-top: 10px;
+        }
+
+        img {
+            width: 100%;
+        }
     }
 }

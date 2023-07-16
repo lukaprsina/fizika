@@ -4,6 +4,7 @@ import { Match, Switch, createEffect, getOwner, onMount, runWithOwner } from "so
 import { createComponent, createSignal, Show } from "solid-js";
 import * as jsx_runtime from 'solid-jsx'
 import katex from "katex"
+import remarkGfm from 'remark-gfm';
 import "katex/dist/katex.min.css"
 
 // TODO: async import
@@ -64,7 +65,7 @@ const components = {
             class="inline"
             ref={katex_ref}
         />
-    }
+    },
 }
 
 const Markdown: VoidComponent<MarkdownProps> = (props) => {
@@ -75,26 +76,30 @@ const Markdown: VoidComponent<MarkdownProps> = (props) => {
         if (!owner || typeof props.markdown != "string")
             return;
 
-        const code = String(compileSync(props.markdown, {
-            outputFormat: 'function-body',
-            jsxImportSource: 'solid-js',
-            providerImportSource: 'solid-jsx',
-        }))
+        try {
+            const code = String(compileSync(props.markdown, {
+                outputFormat: 'function-body',
+                jsxImportSource: 'solid-js',
+                providerImportSource: 'solid-jsx',
+                remarkPlugins: [remarkGfm]
+            }))
 
-        const Content = (runSync(code, jsx_runtime)).default;
-        runWithOwner(owner, () => {
-            const component = createComponent(Content, {
-                components
+            const Content = (runSync(code, jsx_runtime)).default;
+            runWithOwner(owner, () => {
+                const component = createComponent(Content, {
+                    components
+                })
+
+                setContent(component)
             })
-
-            setContent(component)
-        })
-
+        } catch (e) {
+            console.warn("Erorororor", e)
+        }
     })
 
     return (
         <Show when={content}>
-            <div>
+            <div class="prose">
                 {content()}
             </div>
         </Show >
