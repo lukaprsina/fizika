@@ -5,7 +5,7 @@ import { useEditToggle, useThemeToggle } from "~/layouts/Providers";
 
 type HeaderType = {
     topic?: string;
-    name?: string | null;
+    name?: string;
 }
 
 const Header: Component<HeaderType> = (props) => {

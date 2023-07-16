@@ -119,7 +119,10 @@ const TopicNavbar: Component = () => {
     return (
         <Providers>
             <AppShellHeader>
-                <Header topic={decodeURIComponent(params.topic)} name={topic_data()?.session?.user?.name} />
+                <Header
+                    topic={decodeURIComponent(params.topic)}
+                    name={topic_data()?.session?.user?.name ?? undefined}
+                />
             </AppShellHeader>
             <AppShellContent>
                 <List

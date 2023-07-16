@@ -1,5 +1,5 @@
 import { compileSync, runSync } from "@mdx-js/mdx"
-import type { JSX, VoidComponent } from "solid-js";
+import type { Component, JSX, VoidComponent } from "solid-js";
 import { Match, Switch, createEffect, getOwner, onMount, runWithOwner } from "solid-js";
 import { createComponent, createSignal, Show } from "solid-js";
 import * as jsx_runtime from 'solid-jsx'
@@ -10,9 +10,81 @@ import "katex/dist/katex.min.css"
 // TODO: async import
 import { getType } from "mime-lite"
 
+export type PreloadedPageType = {
+    next?: DisplayProps;
+    previous?: DisplayProps;
+}
+
+type DisplayProps = {
+    markdown?: string;
+    title?: string;
+}
+
 type MarkdownProps = {
-    markdown?: string
+    current?: DisplayProps;
+    preloaded?: PreloadedPageType;
 };
+
+// TODO: hash this shit
+
+const Markdown: VoidComponent<MarkdownProps> = (props) => {
+    const [content, setContent] = createSignal<JSX.Element>();
+    const [next, setNext] = createSignal<JSX.Element>();
+    const [previous, setPrevious] = createSignal<JSX.Element>();
+    const owner = getOwner();
+
+    createEffect(() => {
+        if (!owner || typeof props.markdown != "string")
+            return;
+
+        try {
+            const Content = compileMarkdown(props.markdown, props.title)
+            runWithOwner(owner, () => {
+                const component = createComponent(Content, {
+                    components
+                })
+
+                setContent(component)
+            })
+        } catch (e) {
+            console.warn("MDX Compile error", e)
+        }
+    })
+
+    createEffect(() => {
+        if (!props.preloaded) return;
+
+        for (const markdown of [props.preloaded.next, props.preloaded.previous]) {
+            if (!markdown) return;
+        }
+    })
+
+    return (
+        <Show when={content}>
+            <div class="prose">
+                {content()}
+            </div>
+            <div class="hidden">
+                {next()}
+                {previous()}
+            </div>
+        </Show >
+    )
+}
+
+function compileMarkdown(markdown: string, title: string | undefined): Component<{ components: typeof components }> {
+    let titled_markdown = markdown;
+    if (title) titled_markdown = `# ${title}\n\n${titled_markdown}`
+    const code = String(compileSync(titled_markdown, {
+        outputFormat: 'function-body',
+        jsxImportSource: 'solid-js',
+        providerImportSource: 'solid-jsx',
+        remarkPlugins: [remarkGfm]
+    }))
+
+    const Content = (runSync(code, jsx_runtime)).default;
+    return Content;
+}
 
 const components = {
     img: (props: { src: string, alt: string }) => {
@@ -68,42 +140,5 @@ const components = {
     },
 }
 
-const Markdown: VoidComponent<MarkdownProps> = (props) => {
-    const [content, setContent] = createSignal<JSX.Element>();
-    const owner = getOwner();
-
-    createEffect(() => {
-        if (!owner || typeof props.markdown != "string")
-            return;
-
-        try {
-            const code = String(compileSync(props.markdown, {
-                outputFormat: 'function-body',
-                jsxImportSource: 'solid-js',
-                providerImportSource: 'solid-jsx',
-                remarkPlugins: [remarkGfm]
-            }))
-
-            const Content = (runSync(code, jsx_runtime)).default;
-            runWithOwner(owner, () => {
-                const component = createComponent(Content, {
-                    components
-                })
-
-                setContent(component)
-            })
-        } catch (e) {
-            console.warn("Erorororor", e)
-        }
-    })
-
-    return (
-        <Show when={content}>
-            <div class="prose">
-                {content()}
-            </div>
-        </Show >
-    )
-}
 
 export default Markdown;

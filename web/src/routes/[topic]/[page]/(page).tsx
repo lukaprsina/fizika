@@ -2,11 +2,11 @@ import { createShortcut } from "@solid-primitives/keyboard";
 import { Button } from "solid-headless";
 import { HiOutlineArrowLeft, HiOutlineArrowRight } from 'solid-icons/hi';
 import type { VoidComponent, ParentComponent } from "solid-js";
-import { lazy, mergeProps } from "solid-js";
+import { createResource, lazy, mergeProps } from "solid-js";
 import { createEffect, createSignal, Show } from "solid-js";
 import type { RouteDataArgs } from "solid-start";
 import { A, useNavigate, useParams, useRouteData } from "solid-start";
-import { createServerData$ } from "solid-start/server";
+import { createServerAction$, createServerData$ } from "solid-start/server";
 import Header from "~/components/Header";
 import { Tab, TabButton, TabButtonsContainer, TabsContext } from "~/components/Tabs";
 import Providers, { AppShellContent, AppShellHeader, useEditToggle } from "~/layouts/Providers";
@@ -14,8 +14,9 @@ import styles from "./page.module.scss"
 import { prisma } from "~/server/db"
 import { authOptions } from "~/server/auth";
 import { getSession } from "@solid-auth/base";
-import type { Page as PageType } from "@prisma/client";
+import type { PreloadedPageType } from "~/components/Markdown";
 import Markdown from "~/components/Markdown";
+import type { Page as PageType } from "@prisma/client";
 
 const MonacoEditor = lazy(() => import("~/components/MonacoEditor"));
 
@@ -82,15 +83,66 @@ const PageTab = () => {
     const params = useParams<ParamsType>();
     const editToggle = useEditToggle();
     const [showEditor, setShowEditor] = createSignal(false);
+    const [pageId, setPageId] = createSignal<number | undefined>(undefined);
+
+    createEffect(() => {
+        setPageId(parseInt(params.page));
+    })
 
     createEffect(() => {
         const edit_bool = editToggle?.edit()
         setShowEditor(Boolean(edit_bool))
     })
 
-    createEffect(() => {
-        console.log(page_data()?.page?.id)
-    })
+    const [, preload_pages] = createServerAction$(async ({ topic_title, page_ids }:
+        { topic_title: string, page_ids: number[] }) => {
+        const result: (PageType | null)[] = [];
+
+        const topic = await prisma.topic.findUnique({
+            where: {
+                title: topic_title
+            }
+        });
+
+        if (!topic) return result;
+
+        const futures = [];
+        for (const page_id of page_ids) {
+            if (isNaN(page_id)) return result;
+
+            const page_future = prisma.page.findUnique({
+                where: {
+                    topicId_id: {
+                        id: page_id,
+                        topicId: topic.id,
+                    }
+                }
+            });
+
+            futures.push(page_future)
+        }
+
+        return await Promise.all(futures);
+    });
+
+    const [preloadedPages] = createResource<PreloadedPageType | undefined, number>(
+        pageId,
+        async (page_id) => {
+            if (isNaN(page_id)) return;
+
+            const pages = await preload_pages({
+                topic_title: params.topic,
+                page_ids: [page_id - 1, page_id + 1]
+            })
+
+            if (pages.length != 2) return;
+
+            return {
+                previous: pages[0] ?? undefined,
+                next: pages[1] ?? undefined
+            }
+        }
+    );
 
     return (
         <TabsContext defaultIndex={1}>{({ activeTab, setActiveTab }) => <>
@@ -118,7 +170,10 @@ const PageTab = () => {
                 </TabButton>
             </TabButtonsContainer>
             <AppShellHeader>
-                <Header topic={decodeURIComponent(params.topic)} name={page_data()?.session?.user?.name} />
+                <Header
+                    topic={decodeURIComponent(params.topic)}
+                    name={page_data()?.session?.user?.name ?? undefined}
+                />
             </AppShellHeader>
             <AppShellContent>
                 <Tab
@@ -137,7 +192,11 @@ const PageTab = () => {
                             class="w-full h-full flex justify-center"
                         >
                             <div class={`overflow-scroll w-full flex justify-center ${styles.page_content}`}>
-                                <Markdown markdown={page_data()?.page?.markdown} />
+                                <Markdown
+                                    markdown={page_data()?.page?.markdown}
+                                    title={page_data()?.page?.title ?? undefined}
+                                    preloaded={preloadedPages()}
+                                />
                             </div>
                         </div>
                     </Show>
@@ -175,9 +234,9 @@ type NavButtonsType = {
 }
 
 const NavButtons: VoidComponent<NavButtonsType> = (props) => {
+    const [pageId, setPageId] = createSignal(NaN);
     const merged = mergeProps({ keyboard: true }, props)
     const params = useParams<ParamsType>();
-    const [pageId, setPageId] = createSignal(NaN);
     const [baseURL, setBaseURL] = createSignal("");
     const icon_size = "25px";
     const navigate = useNavigate();
