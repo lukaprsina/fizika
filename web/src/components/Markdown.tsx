@@ -16,8 +16,9 @@ export type PreloadedPageType = {
 }
 
 type DisplayProps = {
+    id: number;
     markdown?: string;
-    title?: string;
+    title?: string | null;
 }
 
 type MarkdownProps = {
@@ -25,29 +26,42 @@ type MarkdownProps = {
     preloaded?: PreloadedPageType;
 };
 
-// TODO: hash this shit
+type PageType = Component<{
+    components: typeof components;
+}>;
+
+// TODO: use cache in page, so no need to load
+const page_cache: Record<number, PageType | undefined> = {}
 
 const Markdown: VoidComponent<MarkdownProps> = (props) => {
     const [content, setContent] = createSignal<JSX.Element>();
-    const [next, setNext] = createSignal<JSX.Element>();
-    const [previous, setPrevious] = createSignal<JSX.Element>();
     const owner = getOwner();
 
+    const setPage = (element: PageType) => runWithOwner(owner, () => {
+        const component = createComponent(element, {
+            components
+        })
+
+        setContent(() => component)
+    })
+
     createEffect(() => {
-        if (!owner || typeof props.markdown != "string")
-            return;
+        if (!owner) return;
+        if (typeof props.current?.markdown != "string") return;
 
-        try {
-            const Content = compileMarkdown(props.markdown, props.title)
-            runWithOwner(owner, () => {
-                const component = createComponent(Content, {
-                    components
-                })
+        const cached = page_cache[props.current.id];
+        if (cached) {
+            console.info("Using cache", props.current.id)
+            setPage(cached)
+        } else {
+            try {
+                const element = compileMarkdown(props.current.markdown, props.current.title ?? undefined)
+                page_cache[props.current.id] = element
 
-                setContent(component)
-            })
-        } catch (e) {
-            console.warn("MDX Compile error", e)
+                setPage(element)
+            } catch (e) {
+                console.warn("MDX Compile error", e)
+            }
         }
     })
 
@@ -55,7 +69,18 @@ const Markdown: VoidComponent<MarkdownProps> = (props) => {
         if (!props.preloaded) return;
 
         for (const markdown of [props.preloaded.next, props.preloaded.previous]) {
-            if (!markdown) return;
+            if (!markdown || typeof markdown.markdown != "string") return;
+
+            const cached = page_cache[markdown.id];
+            if (!cached) {
+                try {
+                    const element = compileMarkdown(markdown.markdown, markdown.title ?? undefined)
+                    page_cache[markdown.id] = element
+                    console.info("Preloading", markdown.id)
+                } catch (e) {
+                    console.warn("MDX Compile error", e)
+                }
+            }
         }
     })
 
@@ -65,14 +90,12 @@ const Markdown: VoidComponent<MarkdownProps> = (props) => {
                 {content()}
             </div>
             <div class="hidden">
-                {next()}
-                {previous()}
             </div>
         </Show >
     )
 }
 
-function compileMarkdown(markdown: string, title: string | undefined): Component<{ components: typeof components }> {
+function compileMarkdown(markdown: string, title: string | undefined): PageType {
     let titled_markdown = markdown;
     if (title) titled_markdown = `# ${title}\n\n${titled_markdown}`
     const code = String(compileSync(titled_markdown, {

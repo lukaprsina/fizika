@@ -6,6 +6,7 @@ import { useEditToggle, useThemeToggle } from "~/layouts/Providers";
 type HeaderType = {
     topic?: string;
     name?: string;
+    saveChanges?: { when: boolean; callback: () => void; };
 }
 
 const Header: Component<HeaderType> = (props) => {
@@ -37,7 +38,16 @@ const Header: Component<HeaderType> = (props) => {
                         checked={darkToggle?.dark()}
                         onChange={() => darkToggle?.setDark(!darkToggle.dark())}
                     />
-                        Dark</label>
+                        Temna tema</label>
+                </div>
+                <div class="mx-3">
+                    <Show when={props.name && props.saveChanges?.when}>
+                        <button
+                            onClick={() => props.saveChanges?.callback()}
+                        >
+                            Shrani spremembe
+                        </button>
+                    </Show>
                 </div>
                 <div class="mx-3">
                     <Show when={props.name}>
@@ -47,7 +57,7 @@ const Header: Component<HeaderType> = (props) => {
                             checked={editToggle?.edit()}
                             onChange={() => editToggle?.change(!editToggle.edit())}
                         />
-                            Edit</label>
+                            Uredi</label>
                         <A href="/account">{props.name}</A>
                     </Show>
                 </div>

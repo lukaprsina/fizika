@@ -2,7 +2,7 @@ import { createShortcut } from "@solid-primitives/keyboard";
 import { Button } from "solid-headless";
 import { HiOutlineArrowLeft, HiOutlineArrowRight } from 'solid-icons/hi';
 import type { VoidComponent, ParentComponent } from "solid-js";
-import { createResource, lazy, mergeProps } from "solid-js";
+import { createResource, lazy, mergeProps, onCleanup } from "solid-js";
 import { createEffect, createSignal, Show } from "solid-js";
 import type { RouteDataArgs } from "solid-start";
 import { A, useNavigate, useParams, useRouteData } from "solid-start";
@@ -85,6 +85,19 @@ const PageTab = () => {
     const [showEditor, setShowEditor] = createSignal(false);
     const [pageId, setPageId] = createSignal<number | undefined>(undefined);
 
+    /* createEffect(() => {
+        const handleBeforeUnload: (this: Window, ev: BeforeUnloadEvent) => boolean = e => {
+            e.preventDefault();
+            return true
+        }
+
+        addEventListener("beforeunload", handleBeforeUnload, { capture: true })
+
+        onCleanup(() => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        });
+    }) */
+
     createEffect(() => {
         setPageId(parseInt(params.page));
     })
@@ -116,6 +129,11 @@ const PageTab = () => {
                         id: page_id,
                         topicId: topic.id,
                     }
+                },
+                select: {
+                    id: true,
+                    title: true,
+                    markdown: true,
                 }
             });
 
@@ -143,6 +161,33 @@ const PageTab = () => {
             }
         }
     );
+
+    const [, save_page] = createServerAction$(async ({ topic_title, page_id, new_markdown }:
+        { topic_title: string, page_id: number, new_markdown: string }) => {
+        const topic = await prisma.topic.findUnique({
+            where: {
+                title: topic_title
+            }
+        });
+
+        if (!topic) return;
+
+        prisma.page.update({
+            data: {
+                markdown: new_markdown
+            },
+            where: {
+                topicId_id: {
+                    topicId: topic.id,
+                    id: page_id
+                }
+            }
+        })
+    });
+
+    const getMarkdown: () => string = () => {
+
+    }
 
     return (
         <TabsContext defaultIndex={1}>{({ activeTab, setActiveTab }) => <>
@@ -173,6 +218,16 @@ const PageTab = () => {
                 <Header
                     topic={decodeURIComponent(params.topic)}
                     name={page_data()?.session?.user?.name ?? undefined}
+                    saveChanges={{
+                        when: activeTab() == 1 && showEditor(),
+                        callback: () => {
+                            save_page({
+                                topic_title: decodeURIComponent(params.topic),
+                                page_id: parseInt(params.page),
+                                new_markdown: getMarkdown()
+                            })
+                        }
+                    }}
                 />
             </AppShellHeader>
             <AppShellContent>
@@ -193,8 +248,11 @@ const PageTab = () => {
                         >
                             <div class={`overflow-scroll w-full flex justify-center ${styles.page_content}`}>
                                 <Markdown
-                                    markdown={page_data()?.page?.markdown}
-                                    title={page_data()?.page?.title ?? undefined}
+                                    current={{
+                                        id: pageId()!,
+                                        markdown: page_data()?.page?.markdown,
+                                        title: page_data()?.page?.title ?? undefined
+                                    }}
                                     preloaded={preloadedPages()}
                                 />
                             </div>
