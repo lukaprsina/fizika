@@ -4,18 +4,66 @@ import { HiOutlineArrowLeft, HiOutlineArrowRight } from 'solid-icons/hi';
 import type { VoidComponent, ParentComponent } from "solid-js";
 import { createResource, lazy, mergeProps } from "solid-js";
 import { createEffect, createSignal, Show } from "solid-js";
-import { A, useNavigate, useParams } from "solid-start";
-import { createServerAction$ } from "solid-start/server";
+import type { RouteDataArgs } from "solid-start";
+import { A, useNavigate, useParams, useRouteData } from "solid-start";
+import { createServerAction$, createServerData$ } from "solid-start/server";
 import Header from "~/components/Header";
 import { Tab, TabButton, TabButtonsContainer, TabsContext } from "~/components/Tabs";
 import Providers, { AppShellContent, AppShellHeader, useEditToggle } from "~/layouts/Providers";
 import styles from "./page.module.scss"
 import { prisma } from "~/server/db"
+import { authOptions } from "~/server/auth";
+import { getSession } from "@solid-auth/base";
 import type { PreloadedPageType } from "~/components/Markdown";
 import Markdown from "~/components/Markdown";
 import type { Page as PageType } from "@prisma/client";
 
 const MonacoEditor = lazy(() => import("~/components/MonacoEditor"));
+
+export function routeData({ params }: RouteDataArgs) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    return createServerData$(async ([_, topicArg, pageArg], { request }) => {
+        const session = await getSession(request, authOptions);
+        const result: {
+            session: typeof session,
+            page_count?: number,
+            page?: PageType | null
+        } = { session }
+
+        const topic = await prisma.topic.findUnique({
+            where: {
+                title: topicArg
+            }
+        });
+
+        const page_id = parseInt(pageArg);
+
+        if (isNaN(page_id)) return result;
+        if (!topic) return result;
+
+        const page = await prisma.page.findUnique({
+            where: {
+                topicId_id: {
+                    id: page_id,
+                    topicId: topic.id,
+                }
+            }
+        });
+
+        const page_count = await prisma.page.count({
+            where: {
+                topicId: topic.id,
+            }
+        })
+
+        result.page_count = page_count
+        result.page = page
+
+        return result;
+    }, {
+        key: () => ["page", decodeURIComponent(params.topic), decodeURIComponent(params.page)]
+    })
+}
 
 type ParamsType = {
     topic: string;
@@ -31,6 +79,7 @@ const Page: VoidComponent = () => {
 }
 
 const PageTab = () => {
+    const page_data = useRouteData<typeof routeData>();
     const params = useParams<ParamsType>();
     const editToggle = useEditToggle();
     const [showEditor, setShowEditor] = createSignal(false);
@@ -48,76 +97,6 @@ const PageTab = () => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
         });
     }) */
-
-    /*
-    const [, get_page] = createServerAction$<(
-        { topic_title, page_id }: { topic_title: string, page_id: number }
-    ) => [string, number]> */
-
-    /* {
-            id: number,
-            title: string | null,
-            markdown: string,
-        } | undefined */
-
-    // Promise<(number | { id: number; title: string | null; markdown: string; } | null)[]>
-    const [, get_page] = createServerAction$<{
-        topic_title: string, page_id: number
-    }, {
-        page: string,
-        page_count: number
-    }>(
-        async (properties) => {
-            const topic = await prisma.topic.findUnique({
-                where: {
-                    title: properties.topic_title
-                }
-            });
-
-            if (!topic) throw new Error("No topic")
-
-            const page_count = await prisma.page.count({
-                where: {
-                    topicId: topic.id,
-                }
-            })
-
-            const page = await prisma.page.findUnique({
-                where: {
-                    topicId_id: {
-                        id: properties.page_id,
-                        topicId: topic.id,
-                    }
-                },
-                select: {
-                    id: true,
-                    title: true,
-                    markdown: true,
-                }
-            });
-
-            return {
-                page: page ?? undefined,
-                page_count
-            }
-        });
-
-    // <{ id: number, markdown: string, title: string } | undefined, number>
-    const [page_resource] = createResource(
-        pageId,
-        async (page_id) => {
-            const res = await get_page({
-                topic_title: decodeURIComponent(params.topic),
-                page_id
-            })
-
-            return res
-        }
-    );
-
-    createEffect(() => {
-        console.log(page_resource())
-    })
 
     createEffect(() => {
         setPageId(parseInt(params.page));
@@ -208,12 +187,6 @@ const PageTab = () => {
 
     const [content, setContent] = createSignal("");
 
-    /* createResource
-    get_page({
-        topic_title: decodeURIComponent(params.topic),
-        page_id: parseInt(params.page)
-    }) */
-
     return (
         <TabsContext defaultIndex={1}>{({ activeTab, setActiveTab }) => <>
             <TabButtonsContainer>
@@ -242,7 +215,7 @@ const PageTab = () => {
             <AppShellHeader>
                 <Header
                     topic={decodeURIComponent(params.topic)}
-                    name={"a"}
+                    name={page_data()?.session?.user?.name ?? undefined}
                     saveChanges={{
                         when: activeTab() == 1 && showEditor(),
                         callback: () => {
@@ -267,7 +240,7 @@ const PageTab = () => {
                     index={1}
                     hidden={showEditor()}
                 >
-                    <Show when={page_resource()?.page?.id}>
+                    <Show when={page_data()?.page?.markdown}>
                         <div
                             class="w-full h-full flex justify-center"
                         >
@@ -275,8 +248,8 @@ const PageTab = () => {
                                 <Markdown
                                     current={{
                                         id: pageId()!,
-                                        markdown: page_resource()?.page?.markdown,
-                                        title: page_resource()?.page?.title ?? undefined
+                                        markdown: page_data()?.page?.markdown,
+                                        title: page_data()?.page?.title ?? undefined
                                     }}
                                     preloaded={preloadedPages()}
                                 />
@@ -286,7 +259,7 @@ const PageTab = () => {
                     {/* <FileManager page={page_data()?.page ?? undefined} /> */}
                     <NavButtons
                         keyboard={false}
-                        page_count={page_resource()?.page_count}
+                        page_count={page_data()?.page_count ?? 0}
                     />
                 </Tab>
                 <Tab
@@ -296,16 +269,13 @@ const PageTab = () => {
                 >
                     <MonacoEditor
                         active={activeTab() == 1 && showEditor()}
-                        /* initial={page_data()?.page?.markdown}
+                        initial={page_data()?.page?.markdown}
                         title={page_data()?.page?.title ?? undefined}
-                        id={page_data()!.page!.id} */
-                        id={pageId()!}
-                        initial={page_resource()?.page?.markdown}
-                        title={page_resource()?.page?.title ?? undefined}
+                        id={page_data()!.page!.id}
                         content={content}
                         setContent={setContent}
                     />
-                    <NavButtons page_count={page_resource()?.page_count!} />
+                    <NavButtons page_count={page_data()?.page_count ?? 0} />
                 </Tab>
                 <Tab
                     activeTab={activeTab}
