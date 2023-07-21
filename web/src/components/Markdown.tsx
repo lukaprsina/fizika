@@ -89,8 +89,6 @@ const Markdown: VoidComponent<MarkdownProps> = (props) => {
             <div class="prose">
                 {content()}
             </div>
-            <div class="hidden">
-            </div>
         </Show >
     )
 }

@@ -1,4 +1,4 @@
-import type { Component } from "solid-js";
+import type { Accessor, Component, Setter } from "solid-js";
 import { createEffect } from "solid-js";
 import { createSignal } from "solid-js";
 import loader from '@monaco-editor/loader';
@@ -13,6 +13,10 @@ import { useThemeToggle } from "~/layouts/Providers";
 type MonacoEditorType = {
     active: boolean;
     initial?: string;
+    content: Accessor<string>;
+    id: number;
+    title?: string;
+    setContent: Setter<string>
 };
 
 const [editorInitialized, setEditorInitialized] = createSignal(false);
@@ -21,14 +25,11 @@ const [editorInitialized, setEditorInitialized] = createSignal(false);
 // accept props.markdown
 const MonacoEditor: Component<MonacoEditorType> = (props) => {
     const [editor, setEditor] = createSignal<monaco.editor.IStandaloneCodeEditor>()
-    const [content, setContent] = createSignal("");
     const [trigger, setTrigger] = createSignal<Scheduled<[]>>();
     const theme = useThemeToggle()
 
-    // console.warn("Called Monaco Editor")
-
     createEffect(() => {
-        const a = () => setContent(editor()?.getValue() ?? "napaka")
+        const a = () => props.setContent(editor()?.getValue() ?? "napaka")
         const trigger = debounce(a, 250);
         setTrigger(() => trigger)
     })
@@ -110,7 +111,13 @@ const MonacoEditor: Component<MonacoEditorType> = (props) => {
                 class="flex justify-center w-1/2 h-screen flex-1"
             >
                 <div class={`overflow-scroll w-full flex justify-center ${styles.page_content}`}>
-                    <Markdown markdown={content()} />
+                    <Markdown
+                        current={{
+                            id: props.id,
+                            markdown: props.content(),
+                            title: props.title ?? ""
+                        }}
+                    />
                 </div>
             </div>
         </div>

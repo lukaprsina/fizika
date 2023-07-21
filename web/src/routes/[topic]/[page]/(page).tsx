@@ -2,7 +2,7 @@ import { createShortcut } from "@solid-primitives/keyboard";
 import { Button } from "solid-headless";
 import { HiOutlineArrowLeft, HiOutlineArrowRight } from 'solid-icons/hi';
 import type { VoidComponent, ParentComponent } from "solid-js";
-import { createResource, lazy, mergeProps, onCleanup } from "solid-js";
+import { createResource, lazy, mergeProps } from "solid-js";
 import { createEffect, createSignal, Show } from "solid-js";
 import type { RouteDataArgs } from "solid-start";
 import { A, useNavigate, useParams, useRouteData } from "solid-start";
@@ -185,9 +185,7 @@ const PageTab = () => {
         })
     });
 
-    const getMarkdown: () => string = () => {
-
-    }
+    const [content, setContent] = createSignal("");
 
     return (
         <TabsContext defaultIndex={1}>{({ activeTab, setActiveTab }) => <>
@@ -224,7 +222,7 @@ const PageTab = () => {
                             save_page({
                                 topic_title: decodeURIComponent(params.topic),
                                 page_id: parseInt(params.page),
-                                new_markdown: getMarkdown()
+                                new_markdown: content()
                             })
                         }
                     }}
@@ -272,6 +270,10 @@ const PageTab = () => {
                     <MonacoEditor
                         active={activeTab() == 1 && showEditor()}
                         initial={page_data()?.page?.markdown}
+                        title={page_data()?.page?.title ?? undefined}
+                        id={page_data()!.page!.id}
+                        content={content}
+                        setContent={setContent}
                     />
                     <NavButtons page_count={page_data()?.page_count ?? 0} />
                 </Tab>
