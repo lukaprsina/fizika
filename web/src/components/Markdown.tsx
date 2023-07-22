@@ -31,7 +31,10 @@ type PageType = Component<{
 }>;
 
 // TODO: use cache in page, so no need to load
-const page_cache: Record<number, PageType | undefined> = {}
+const page_cache: Record<number, {
+    page: PageType | undefined,
+    markdown_length: number
+}> = {}
 
 const Markdown: VoidComponent<MarkdownProps> = (props) => {
     const [content, setContent] = createSignal<JSX.Element>();
@@ -46,22 +49,28 @@ const Markdown: VoidComponent<MarkdownProps> = (props) => {
     })
 
     createEffect(() => {
+        console.warn("FROM MARKDOWN", props.current)
+
         if (!owner) return;
         if (typeof props.current?.markdown != "string") return;
 
         const cached = page_cache[props.current.id];
-        if (cached) {
+        if (cached && cached.page && props.current.markdown.length == cached.markdown_length) {
             console.info("Using cache", props.current.id)
-            setPage(cached)
-        } else {
-            try {
-                const element = compileMarkdown(props.current.markdown, props.current.title ?? undefined)
-                page_cache[props.current.id] = element
+            setPage(cached.page)
+            return;
+        }
 
-                setPage(element)
-            } catch (e) {
-                console.warn("MDX Compile error", e)
+        try {
+            const element = compileMarkdown(props.current.markdown, props.current.title ?? undefined)
+            page_cache[props.current.id] = {
+                page: element,
+                markdown_length: props.current.markdown.length ?? 0
             }
+
+            setPage(element)
+        } catch (e) {
+            console.warn("MDX Compile error", e)
         }
     })
 
@@ -75,7 +84,10 @@ const Markdown: VoidComponent<MarkdownProps> = (props) => {
             if (!cached) {
                 try {
                     const element = compileMarkdown(markdown.markdown, markdown.title ?? undefined)
-                    page_cache[markdown.id] = element
+                    page_cache[markdown.id] = {
+                        page: element,
+                        markdown_length: markdown.markdown.length
+                    }
                     console.info("Preloading", markdown.id)
                 } catch (e) {
                     console.warn("MDX Compile error", e)

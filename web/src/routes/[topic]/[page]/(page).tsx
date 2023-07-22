@@ -2,10 +2,11 @@ import { createShortcut } from "@solid-primitives/keyboard";
 import { Button } from "solid-headless";
 import { HiOutlineArrowLeft, HiOutlineArrowRight } from 'solid-icons/hi';
 import type { VoidComponent, ParentComponent } from "solid-js";
-import { createResource, lazy, mergeProps } from "solid-js";
+import { Suspense, createResource, lazy, mergeProps } from "solid-js";
 import { createEffect, createSignal, Show } from "solid-js";
-import { A, useNavigate, useParams } from "solid-start";
-import { createServerAction$ } from "solid-start/server";
+import type { RouteDataArgs } from "solid-start";
+import { A, useNavigate, useParams, useRouteData } from "solid-start";
+import { createServerAction$, createServerData$ } from "solid-start/server";
 import Header from "~/components/Header";
 import { Tab, TabButton, TabButtonsContainer, TabsContext } from "~/components/Tabs";
 import Providers, { AppShellContent, AppShellHeader, useEditToggle } from "~/layouts/Providers";
@@ -14,6 +15,8 @@ import { prisma } from "~/server/db"
 import type { PreloadedPageType } from "~/components/Markdown";
 import Markdown from "~/components/Markdown";
 import type { Page as PageType } from "@prisma/client";
+import { getSession } from "@solid-auth/base";
+import { authOptions } from "~/server/auth";
 
 const MonacoEditor = lazy(() => import("~/components/MonacoEditor"));
 
@@ -30,7 +33,43 @@ const Page: VoidComponent = () => {
     )
 }
 
+
+export function routeData({ params }: RouteDataArgs) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    return createServerData$(async ([_, topicArg, pageArg], { request }) => {
+        const session = await getSession(request, authOptions);
+
+        const topic = await prisma.topic.findUnique({
+            where: {
+                title: topicArg
+            }
+        });
+
+        const page_id = parseInt(pageArg);
+
+        if (isNaN(page_id)) throw new Error("No page id");
+        if (!topic) throw new Error("No topic");
+
+        const page_count = await prisma.page.count({
+            where: {
+                topicId: topic.id,
+            }
+        })
+
+        return { page_count, session }
+    }, {
+        key: () => ["page", decodeURIComponent(params.topic), decodeURIComponent(params.page)]
+    })
+}
+
+type PageMarkdownType = {
+    id: number,
+    title: string | null,
+    markdown: string,
+} | undefined;
+
 const PageTab = () => {
+    const page_data = useRouteData<typeof routeData>();
     const params = useParams<ParamsType>();
     const editToggle = useEditToggle();
     const [showEditor, setShowEditor] = createSignal(false);
@@ -64,13 +103,13 @@ const PageTab = () => {
     const [, get_page] = createServerAction$<{
         topic_title: string, page_id: number
     }, {
-        page: string,
+        page: PageMarkdownType,
         page_count: number
     }>(
-        async (properties) => {
+        async ({ topic_title, page_id }) => {
             const topic = await prisma.topic.findUnique({
                 where: {
-                    title: properties.topic_title
+                    title: topic_title
                 }
             });
 
@@ -85,7 +124,7 @@ const PageTab = () => {
             const page = await prisma.page.findUnique({
                 where: {
                     topicId_id: {
-                        id: properties.page_id,
+                        id: page_id,
                         topicId: topic.id,
                     }
                 },
@@ -116,7 +155,7 @@ const PageTab = () => {
     );
 
     createEffect(() => {
-        console.log(page_resource())
+        console.log("page_resource", page_resource())
     })
 
     createEffect(() => {
@@ -242,7 +281,7 @@ const PageTab = () => {
             <AppShellHeader>
                 <Header
                     topic={decodeURIComponent(params.topic)}
-                    name={"a"}
+                    name={page_data()?.session?.user?.name ?? undefined}
                     saveChanges={{
                         when: activeTab() == 1 && showEditor(),
                         callback: () => {
@@ -267,26 +306,28 @@ const PageTab = () => {
                     index={1}
                     hidden={showEditor()}
                 >
-                    <Show when={page_resource()?.page?.id}>
-                        <div
-                            class="w-full h-full flex justify-center"
-                        >
-                            <div class={`overflow-scroll w-full flex justify-center ${styles.page_content}`}>
-                                <Markdown
-                                    current={{
-                                        id: pageId()!,
-                                        markdown: page_resource()?.page?.markdown,
-                                        title: page_resource()?.page?.title ?? undefined
-                                    }}
-                                    preloaded={preloadedPages()}
-                                />
+                    <Suspense>
+                        <Show when={page_resource()?.page?.id}>
+                            <div
+                                class="w-full h-full flex justify-center"
+                            >
+                                <div class={`overflow-scroll w-full flex justify-center ${styles.page_content}`}>
+                                    <Markdown
+                                        current={{
+                                            id: pageId()!,
+                                            markdown: page_resource()?.page?.markdown,
+                                            title: page_resource()?.page?.title ?? undefined
+                                        }}
+                                        preloaded={preloadedPages()}
+                                    />
+                                </div>
                             </div>
-                        </div>
-                    </Show>
+                        </Show>
+                    </Suspense>
                     {/* <FileManager page={page_data()?.page ?? undefined} /> */}
                     <NavButtons
                         keyboard={false}
-                        page_count={page_resource()?.page_count}
+                        page_count={page_data()?.page_count ?? 0}
                     />
                 </Tab>
                 <Tab
@@ -305,7 +346,7 @@ const PageTab = () => {
                         content={content}
                         setContent={setContent}
                     />
-                    <NavButtons page_count={page_resource()?.page_count!} />
+                    <NavButtons page_count={page_data()?.page_count ?? 0} />
                 </Tab>
                 <Tab
                     activeTab={activeTab}

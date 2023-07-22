@@ -54,7 +54,7 @@ const MonacoEditor: Component<MonacoEditorType> = (props) => {
             return;
 
         if (!props.active) {
-            console.warn("Editor not active, exiting")
+            // console.warn("Editor not active, exiting")
             return;
         }
 
