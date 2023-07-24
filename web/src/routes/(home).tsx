@@ -59,7 +59,7 @@ const Home: VoidComponent = () => {
     return (
         <Providers>
             <AppShellHeader>
-                <Header name={data()?.session?.user?.name} />
+                <Header username={data()?.session?.user?.name} />
             </AppShellHeader>
             <AppShellContent>
                 <List

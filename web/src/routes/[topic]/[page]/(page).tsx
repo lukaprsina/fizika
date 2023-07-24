@@ -2,7 +2,7 @@ import { createShortcut } from "@solid-primitives/keyboard";
 import { Button } from "solid-headless";
 import { HiOutlineArrowLeft, HiOutlineArrowRight } from 'solid-icons/hi';
 import type { VoidComponent, ParentComponent } from "solid-js";
-import { Suspense, createResource, lazy, mergeProps } from "solid-js";
+import { Suspense, createResource, lazy } from "solid-js";
 import { createEffect, createSignal, Show } from "solid-js";
 import type { RouteDataArgs } from "solid-start";
 import { A, useNavigate, useParams, useRouteData } from "solid-start";
@@ -68,12 +68,41 @@ type PageMarkdownType = {
     markdown: string,
 } | undefined;
 
+const [showEditor, setShowEditor] = createSignal(false);
 const PageTab = () => {
+    const navigate = useNavigate();
     const page_data = useRouteData<typeof routeData>();
     const params = useParams<ParamsType>();
     const editToggle = useEditToggle();
-    const [showEditor, setShowEditor] = createSignal(false);
-    const [pageId, setPageId] = createSignal<number | undefined>(undefined);
+
+    createEffect(() => {
+        const a = () => {
+            if (!showEditor() && pageId() > 0) {
+                navigate(baseURL() + (pageId() - 1))
+            }
+        }
+
+        createShortcut(
+            ["ARROWLEFT"],
+            a,
+            { preventDefault: true, requireReset: false }
+        )
+    })
+
+    createEffect(() => {
+        const a = () => {
+            // props.page_count
+            if (!showEditor() && pageId() < 99 - 1) {
+                navigate(baseURL() + (pageId() + 1))
+            }
+        };
+
+        createShortcut(
+            ["ARROWRIGHT"],
+            a,
+            { preventDefault: true, requireReset: false }
+        )
+    })
 
     /* createEffect(() => {
         const handleBeforeUnload: (this: Window, ev: BeforeUnloadEvent) => boolean = e => {
@@ -88,18 +117,6 @@ const PageTab = () => {
         });
     }) */
 
-    /*
-    const [, get_page] = createServerAction$<(
-        { topic_title, page_id }: { topic_title: string, page_id: number }
-    ) => [string, number]> */
-
-    /* {
-            id: number,
-            title: string | null,
-            markdown: string,
-        } | undefined */
-
-    // Promise<(number | { id: number; title: string | null; markdown: string; } | null)[]>
     const [, get_page] = createServerAction$<{
         topic_title: string, page_id: number
     }, {
@@ -141,7 +158,6 @@ const PageTab = () => {
             }
         });
 
-    // <{ id: number, markdown: string, title: string } | undefined, number>
     const [page_resource] = createResource(
         pageId,
         async (page_id) => {
@@ -153,10 +169,6 @@ const PageTab = () => {
             return res
         }
     );
-
-    createEffect(() => {
-        console.log("page_resource", page_resource())
-    })
 
     createEffect(() => {
         setPageId(parseInt(params.page));
@@ -213,6 +225,8 @@ const PageTab = () => {
                 page_ids: [page_id - 1, page_id + 1]
             })
 
+            if (!pages) throw new Error("No pages")
+
             if (pages.length != 2) return;
 
             return {
@@ -247,12 +261,6 @@ const PageTab = () => {
 
     const [content, setContent] = createSignal("");
 
-    /* createResource
-    get_page({
-        topic_title: decodeURIComponent(params.topic),
-        page_id: parseInt(params.page)
-    }) */
-
     return (
         <TabsContext defaultIndex={1}>{({ activeTab, setActiveTab }) => <>
             <TabButtonsContainer>
@@ -281,7 +289,8 @@ const PageTab = () => {
             <AppShellHeader>
                 <Header
                     topic={decodeURIComponent(params.topic)}
-                    name={page_data()?.session?.user?.name ?? undefined}
+                    username={page_data()?.session?.user?.name ?? undefined}
+                    pageName={showEditor() ? page_resource()?.page?.title ?? undefined : undefined}
                     saveChanges={{
                         when: activeTab() == 1 && showEditor(),
                         callback: () => {
@@ -306,23 +315,21 @@ const PageTab = () => {
                     index={1}
                     hidden={showEditor()}
                 >
-                    <Suspense>
-                        <Show when={page_resource()?.page?.id}>
-                            <div
-                                class="w-full h-full flex justify-center"
-                            >
-                                <div class={`overflow-scroll w-full flex justify-center ${styles.page_content}`}>
-                                    <Markdown
-                                        current={{
-                                            id: pageId()!,
-                                            markdown: page_resource()?.page?.markdown,
-                                            title: page_resource()?.page?.title ?? undefined
-                                        }}
-                                        preloaded={preloadedPages()}
-                                    />
-                                </div>
+                    <Suspense fallback={<p>Hell</p>}>
+                        <div
+                            class="w-full h-full flex justify-center"
+                        >
+                            <div class={`w-full flex justify-center ${styles.page_content}`}>
+                                <Markdown
+                                    current={{
+                                        id: pageId()!,
+                                        markdown: page_resource()?.page?.markdown,
+                                        title: page_resource()?.page?.title ?? undefined
+                                    }}
+                                    preloaded={preloadedPages()}
+                                />
                             </div>
-                        </Show>
+                        </div>
                     </Suspense>
                     {/* <FileManager page={page_data()?.page ?? undefined} /> */}
                     <NavButtons
@@ -346,7 +353,10 @@ const PageTab = () => {
                         content={content}
                         setContent={setContent}
                     />
-                    <NavButtons page_count={page_data()?.page_count ?? 0} />
+                    <NavButtons
+                        keyboard={true}
+                        page_count={page_data()?.page_count ?? 0}
+                    />
                 </Tab>
                 <Tab
                     activeTab={activeTab}
@@ -361,41 +371,19 @@ const PageTab = () => {
 
 type NavButtonsType = {
     page_count: number;
-    keyboard?: boolean;
+    keyboard: boolean;
 }
 
+const [pageId, setPageId] = createSignal(NaN);
+const [baseURL, setBaseURL] = createSignal("");
 const NavButtons: VoidComponent<NavButtonsType> = (props) => {
-    const [pageId, setPageId] = createSignal(NaN);
-    const merged = mergeProps({ keyboard: true }, props)
     const params = useParams<ParamsType>();
-    const [baseURL, setBaseURL] = createSignal("");
     const icon_size = "25px";
-    const navigate = useNavigate();
 
     createEffect(() => {
         setBaseURL("/" + params.topic + "/")
         setPageId(parseInt(params.page));
     })
-
-    createShortcut(
-        ["ARROWLEFT"],
-        () => {
-            if (merged.keyboard && pageId() > 0) {
-                navigate(baseURL() + (pageId() - 1))
-            }
-        },
-        { preventDefault: true, requireReset: false }
-    )
-
-    createShortcut(
-        ["ARROWRIGHT"],
-        () => {
-            if (merged.keyboard && pageId() < merged.page_count - 1) {
-                navigate(baseURL() + (pageId() + 1))
-            }
-        },
-        { preventDefault: true, requireReset: false }
-    )
 
     return (
         <div
@@ -412,7 +400,7 @@ const NavButtons: VoidComponent<NavButtonsType> = (props) => {
                     </A>
                 </IconButton>
             </Show>
-            <Show when={pageId() < merged.page_count - 1}>
+            <Show when={pageId() < props.page_count - 1}>
                 <IconButton>
                     <A href={baseURL() + (pageId() + 1)}>
                         <HiOutlineArrowRight size={icon_size} />

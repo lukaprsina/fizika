@@ -70,7 +70,8 @@ const MonacoEditor: Component<MonacoEditorType> = (props) => {
                 language: 'markdown',
                 dragAndDrop: true,
                 automaticLayout: true,
-                theme: theme?.dark() ? "vs-dark" : "vs"
+                theme: theme?.dark() ? "vs-dark" : "vs",
+                wordWrap: "on"
             });
 
             const tr = trigger();
@@ -97,8 +98,6 @@ const MonacoEditor: Component<MonacoEditorType> = (props) => {
 
         editor()?.onDidChangeModelContent(a)
     })
-
-    // TODO: editor resize
 
     return (
         <div class="w-full h-full flex flex-row">

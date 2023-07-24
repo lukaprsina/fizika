@@ -1,17 +1,21 @@
+import { TextField } from "@suid/material";
 import type { Component } from "solid-js";
-import { Show } from "solid-js";
+import { Show, createEffect } from "solid-js";
 import { A } from "solid-start";
 import { useEditToggle, useThemeToggle } from "~/layouts/Providers";
 
 type HeaderType = {
     topic?: string;
-    name?: string;
+    username?: string;
+    pageName?: string;
     saveChanges?: { when: boolean; callback: () => void; };
 }
 
 const Header: Component<HeaderType> = (props) => {
     const editToggle = useEditToggle();
     const darkToggle = useThemeToggle();
+
+    createEffect(() => console.warn(props.pageName))
 
     return (
         <div
@@ -30,6 +34,13 @@ const Header: Component<HeaderType> = (props) => {
             <Show when={props.topic}>
                 <A href={encodeURI("/" + props.topic)}>{props.topic}</A>
             </Show>
+            <Show when={props.pageName}>
+                <TextField
+                    label="Ime strani"
+                    size="small"
+                    defaultValue={props.pageName}
+                />
+            </Show>
             <div class="flex">
                 <div class="mx-3">
                     <label><input
@@ -41,7 +52,7 @@ const Header: Component<HeaderType> = (props) => {
                         Temna tema</label>
                 </div>
                 <div class="mx-3">
-                    <Show when={props.name && props.saveChanges?.when}>
+                    <Show when={props.username && props.saveChanges?.when}>
                         <button
                             onClick={() => props.saveChanges?.callback()}
                         >
@@ -50,7 +61,7 @@ const Header: Component<HeaderType> = (props) => {
                     </Show>
                 </div>
                 <div class="mx-3">
-                    <Show when={props.name}>
+                    <Show when={props.username}>
                         <label class="mr-2"><input
                             type="checkbox"
                             class="mr-2"
@@ -58,7 +69,7 @@ const Header: Component<HeaderType> = (props) => {
                             onChange={() => editToggle?.change(!editToggle.edit())}
                         />
                             Uredi</label>
-                        <A href="/account">{props.name}</A>
+                        <A href="/account">{props.username}</A>
                     </Show>
                 </div>
             </div>

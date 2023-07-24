@@ -121,7 +121,7 @@ const TopicNavbar: Component = () => {
             <AppShellHeader>
                 <Header
                     topic={decodeURIComponent(params.topic)}
-                    name={topic_data()?.session?.user?.name ?? undefined}
+                    username={topic_data()?.session?.user?.name ?? undefined}
                 />
             </AppShellHeader>
             <AppShellContent>

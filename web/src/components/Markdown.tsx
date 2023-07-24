@@ -1,6 +1,6 @@
 import { compileSync, runSync } from "@mdx-js/mdx"
 import type { Component, JSX, VoidComponent } from "solid-js";
-import { Match, Switch, createEffect, getOwner, onMount, runWithOwner } from "solid-js";
+import { Match, Suspense, Switch, createEffect, getOwner, onMount, runWithOwner } from "solid-js";
 import { createComponent, createSignal, Show } from "solid-js";
 import * as jsx_runtime from 'solid-jsx'
 import katex from "katex"
@@ -49,19 +49,19 @@ const Markdown: VoidComponent<MarkdownProps> = (props) => {
     })
 
     createEffect(() => {
-        console.warn("FROM MARKDOWN", props.current)
-
         if (!owner) return;
         if (typeof props.current?.markdown != "string") return;
 
         const cached = page_cache[props.current.id];
         if (cached && cached.page && props.current.markdown.length == cached.markdown_length) {
             console.info("Using cache", props.current.id)
+            console.warn("FROM MARKDOWN", props.current.markdown.length, cached.markdown_length)
             setPage(cached.page)
             return;
         }
 
         try {
+            console.info("Compiling", props.current.id, props.current.markdown.length)
             const element = compileMarkdown(props.current.markdown, props.current.title ?? undefined)
             page_cache[props.current.id] = {
                 page: element,
@@ -96,12 +96,16 @@ const Markdown: VoidComponent<MarkdownProps> = (props) => {
         }
     })
 
+    // <div>{previous()}</div>
     return (
-        <Show when={content}>
-            <div class="prose">
-                {content()}
-            </div>
-        </Show >
+        <Suspense
+            fallback={<p>TESTAASDFGASDF</p>}>
+            <Show when={content()}>
+                <div class="prose">
+                    {content()}
+                </div>
+            </Show >
+        </Suspense>
     )
 }
 
