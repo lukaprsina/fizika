@@ -2,12 +2,21 @@ import { type VoidComponent } from "solid-js";
 import { createRouteAction } from "solid-start";
 
 const App: VoidComponent = () => {
-    let my_ref: HTMLParagraphElement | undefined;
+    let my_ref: HTMLParagraphElement | undefined;    
 
     const [, do_server_stuff] = createRouteAction<{ foo: number }, { bar: string }>(
         async (args) => {
-            // args are void in typescript
+            // args are void in typescript, should be {foo:number},
+            // return type is correct
             return { bar: "test " + args.foo.toString() }
+        }
+    );
+
+    const [, no_input] = createRouteAction<{ bar: string }>(
+        async (arg1, arg2) => {
+            // args are void,
+            // return type is Promise<void>
+            return new Promise()
         }
     );
 

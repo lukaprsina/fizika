@@ -2,7 +2,7 @@ import { createShortcut } from "@solid-primitives/keyboard";
 import { Button } from "solid-headless";
 import { HiOutlineArrowLeft, HiOutlineArrowRight } from 'solid-icons/hi';
 import type { VoidComponent, ParentComponent } from "solid-js";
-import { Suspense, createResource, lazy } from "solid-js";
+import { createResource, lazy } from "solid-js";
 import { createEffect, createSignal, Show } from "solid-js";
 import type { RouteDataArgs } from "solid-start";
 import { A, useNavigate, useParams, useRouteData } from "solid-start";
@@ -260,6 +260,11 @@ const PageTab = () => {
     });
 
     const [content, setContent] = createSignal("");
+    const [title, setTitle] = createSignal<string | undefined>();
+
+    createEffect(() => {
+        setTitle(page_resource()?.page?.title ?? undefined)
+    })
 
     return (
         <TabsContext defaultIndex={1}>{({ activeTab, setActiveTab }) => <>
@@ -290,7 +295,8 @@ const PageTab = () => {
                 <Header
                     topic={decodeURIComponent(params.topic)}
                     username={page_data()?.session?.user?.name ?? undefined}
-                    pageName={showEditor() ? page_resource()?.page?.title ?? undefined : undefined}
+                    pageName={showEditor() ? title() : undefined}
+                    setPageName={setTitle}
                     saveChanges={{
                         when: activeTab() == 1 && showEditor(),
                         callback: () => {
@@ -315,22 +321,20 @@ const PageTab = () => {
                     index={1}
                     hidden={showEditor()}
                 >
-                    <Suspense fallback={<p>Hell</p>}>
-                        <div
-                            class="w-full h-full flex justify-center"
-                        >
-                            <div class={`w-full flex justify-center ${styles.page_content}`}>
-                                <Markdown
-                                    current={{
-                                        id: pageId()!,
-                                        markdown: page_resource()?.page?.markdown,
-                                        title: page_resource()?.page?.title ?? undefined
-                                    }}
-                                    preloaded={preloadedPages()}
-                                />
-                            </div>
+                    <div
+                        class="w-full h-full flex justify-center"
+                    >
+                        <div class={`w-full flex justify-center ${styles.page_content}`}>
+                            <Markdown
+                                current={{
+                                    id: pageId()!,
+                                    markdown: page_resource()?.page?.markdown,
+                                    title: title()
+                                }}
+                                preloaded={preloadedPages()}
+                            />
                         </div>
-                    </Suspense>
+                    </div>
                     {/* <FileManager page={page_data()?.page ?? undefined} /> */}
                     <NavButtons
                         keyboard={false}
@@ -344,12 +348,9 @@ const PageTab = () => {
                 >
                     <MonacoEditor
                         active={activeTab() == 1 && showEditor()}
-                        /* initial={page_data()?.page?.markdown}
-                        title={page_data()?.page?.title ?? undefined}
-                        id={page_data()!.page!.id} */
                         id={pageId()!}
                         initial={page_resource()?.page?.markdown}
-                        title={page_resource()?.page?.title ?? undefined}
+                        title={title()}
                         content={content}
                         setContent={setContent}
                     />

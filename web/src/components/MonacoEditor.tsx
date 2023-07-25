@@ -58,7 +58,7 @@ const MonacoEditor: Component<MonacoEditorType> = (props) => {
             return;
         }
 
-        console.warn("Editor loader.init")
+        // console.warn("Editor loader.init")
 
         loader.init().then(monaco => {
             const component = document.querySelector("#editor");
@@ -114,7 +114,7 @@ const MonacoEditor: Component<MonacoEditorType> = (props) => {
                         current={{
                             id: props.id,
                             markdown: props.content(),
-                            title: props.title ?? ""
+                            title: props.title ?? undefined
                         }}
                     />
                 </div>

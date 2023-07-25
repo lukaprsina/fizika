@@ -1,6 +1,6 @@
 import { TextField } from "@suid/material";
-import type { Component } from "solid-js";
-import { Show, createEffect } from "solid-js";
+import type { Component, Setter } from "solid-js";
+import { Show } from "solid-js";
 import { A } from "solid-start";
 import { useEditToggle, useThemeToggle } from "~/layouts/Providers";
 
@@ -8,14 +8,13 @@ type HeaderType = {
     topic?: string;
     username?: string;
     pageName?: string;
+    setPageName?: Setter<string>;
     saveChanges?: { when: boolean; callback: () => void; };
 }
 
 const Header: Component<HeaderType> = (props) => {
     const editToggle = useEditToggle();
     const darkToggle = useThemeToggle();
-
-    createEffect(() => console.warn(props.pageName))
 
     return (
         <div
@@ -34,11 +33,14 @@ const Header: Component<HeaderType> = (props) => {
             <Show when={props.topic}>
                 <A href={encodeURI("/" + props.topic)}>{props.topic}</A>
             </Show>
-            <Show when={props.pageName}>
+            <Show when={typeof props.pageName == "string" && props.setPageName}>
                 <TextField
                     label="Ime strani"
                     size="small"
-                    defaultValue={props.pageName}
+                    value={props.pageName}
+                    onChange={(event) => {
+                        props.setPageName!(event.target.value)
+                    }}
                 />
             </Show>
             <div class="flex">

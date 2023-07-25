@@ -1,10 +1,10 @@
 import { compileSync, runSync } from "@mdx-js/mdx"
 import type { Component, JSX, VoidComponent } from "solid-js";
-import { Match, Suspense, Switch, createEffect, getOwner, onMount, runWithOwner } from "solid-js";
+import { Match, Switch, createEffect, getOwner, onMount, runWithOwner } from "solid-js";
 import { createComponent, createSignal, Show } from "solid-js";
 import * as jsx_runtime from 'solid-jsx'
 import katex from "katex"
-import remarkGfm from 'remark-gfm';
+// import remarkGfm from 'remark-gfm';
 import "katex/dist/katex.min.css"
 
 // TODO: async import
@@ -34,38 +34,42 @@ type PageType = Component<{
 const page_cache: Record<number, {
     page: PageType | undefined,
     markdown_length: number
+    title?: string
 }> = {}
 
 const Markdown: VoidComponent<MarkdownProps> = (props) => {
     const [content, setContent] = createSignal<JSX.Element>();
     const owner = getOwner();
 
-    const setPage = (element: PageType) => runWithOwner(owner, () => {
-        const component = createComponent(element, {
-            components
+    createEffect(() => {
+        const setPage = (element: PageType) => runWithOwner(owner, () => {
+            const jsx = createComponent(element, {
+                components
+            })
+
+            setContent(() => jsx)
         })
 
-        setContent(() => component)
-    })
-
-    createEffect(() => {
         if (!owner) return;
         if (typeof props.current?.markdown != "string") return;
 
         const cached = page_cache[props.current.id];
-        if (cached && cached.page && props.current.markdown.length == cached.markdown_length) {
-            console.info("Using cache", props.current.id)
-            console.warn("FROM MARKDOWN", props.current.markdown.length, cached.markdown_length)
+        if (
+            cached &&
+            cached.page &&
+            props.current.markdown.length == cached.markdown_length &&
+            props.current.title == cached.title
+        ) {
             setPage(cached.page)
             return;
         }
 
         try {
-            console.info("Compiling", props.current.id, props.current.markdown.length)
             const element = compileMarkdown(props.current.markdown, props.current.title ?? undefined)
             page_cache[props.current.id] = {
                 page: element,
-                markdown_length: props.current.markdown.length ?? 0
+                markdown_length: props.current.markdown.length ?? 0,
+                title: props.current.title ?? undefined
             }
 
             setPage(element)
@@ -86,9 +90,9 @@ const Markdown: VoidComponent<MarkdownProps> = (props) => {
                     const element = compileMarkdown(markdown.markdown, markdown.title ?? undefined)
                     page_cache[markdown.id] = {
                         page: element,
-                        markdown_length: markdown.markdown.length
+                        markdown_length: markdown.markdown.length,
+                        title: markdown.title ?? undefined
                     }
-                    console.info("Preloading", markdown.id)
                 } catch (e) {
                     console.warn("MDX Compile error", e)
                 }
@@ -96,27 +100,24 @@ const Markdown: VoidComponent<MarkdownProps> = (props) => {
         }
     })
 
-    // <div>{previous()}</div>
     return (
-        <Suspense
-            fallback={<p>TESTAASDFGASDF</p>}>
-            <Show when={content()}>
-                <div class="prose">
-                    {content()}
-                </div>
-            </Show >
-        </Suspense>
+        <div class="prose">
+            {content()}
+        </div>
     )
 }
 
 function compileMarkdown(markdown: string, title: string | undefined): PageType {
     let titled_markdown = markdown;
-    if (title) titled_markdown = `# ${title}\n\n${titled_markdown}`
+
+    if (title) {
+        titled_markdown = `# ${title}\n\n${titled_markdown}`
+    }
+
     const code = String(compileSync(titled_markdown, {
         outputFormat: 'function-body',
         jsxImportSource: 'solid-js',
         providerImportSource: 'solid-jsx',
-        remarkPlugins: [remarkGfm]
     }))
 
     const Content = (runSync(code, jsx_runtime)).default;
