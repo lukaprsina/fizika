@@ -15,11 +15,6 @@ async function main() {
                 create: {
                     description: "Fizika course metadata desciption"
                 },
-            },
-            resource: {
-                create: {
-
-                }
             }
         }
     })
@@ -83,11 +78,6 @@ async function main() {
             }
         })
 
-        const keywords = script_json.metadata.keyword.map((keyword: string) => ({
-            create: { value: keyword },
-            where: { value: keyword }
-        }))
-
         const topic = await prisma.topic.create({
             data: {
                 id: i,
@@ -103,11 +93,6 @@ async function main() {
                         goals: script_json.metadata.goals,
                         license: script_json.metadata.license,
                     },
-                },
-                resource: {
-                    create: {
-
-                    }
                 }
             }
         })
@@ -161,7 +146,6 @@ async function main() {
                         text: "Page text",
                         title: page_json.subheading,
                         topic: { connect: { id: topic.id } },
-                        resource: { create: {} },
                         metadata: { create: {} }
                     }
                 })

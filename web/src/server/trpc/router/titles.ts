@@ -22,13 +22,7 @@ export default router({
       }
     });
 
-    const resources = await prisma.resource.findMany({
-      where: {
-        topic: { id: topic?.id },
-        page: { id: input.page }
-      }
-    })
+    // change rust to use id for shiz
 
-    return resources;
   })
 });
