@@ -13,4 +13,22 @@ export default router({
   secret: protectedProcedure.query(({ ctx }) => {
     return `This is top secret - ${ctx.session.user.name}`;
   }),
+  getFiles: protectedProcedure.input(z.object({ topic: z.string(), page: z.number() })).query(async ({ input }) => {
+    if (!prisma) return;
+
+    const topic = await prisma.topic.findUnique({
+      where: {
+        title: input.topic
+      }
+    });
+
+    const resources = await prisma.resource.findMany({
+      where: {
+        topic: { id: topic?.id },
+        page: { id: input.page }
+      }
+    })
+
+    return resources;
+  })
 });

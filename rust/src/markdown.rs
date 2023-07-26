@@ -3,7 +3,7 @@ use select::{
     node::Node,
     predicate::{self, And, Class, Comment, Name},
 };
-use tracing::warn;
+use tracing::{info, warn};
 
 use crate::{
     copy_gradivo::{copy_gradivo, GradivoType},
@@ -242,6 +242,14 @@ pub fn recurse_node(
                 };
 
                 contents.push((result, ElementSpacing::Inline))
+            }
+            "p" => {
+                let elems = node
+                    .find(predicate::Descendant(Name("p"), Class("close")))
+                    .collect_vec();
+                if elems.len() == 1 {
+                    ignore_children = true;
+                }
             }
             _ => {}
         },

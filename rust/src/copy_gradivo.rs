@@ -41,12 +41,13 @@ pub fn copy_gradivo(
         COPY_LIST.push((source_dir.clone(), destination_dir.clone()));
     }
 
-    let filename = PathBuf::from("gradivo");
+    /* let filename = PathBuf::from("gradivo");
     let filename = filename.join(dir_uuid.to_string());
     let filename = filename.join(gradivo_type.to_string());
-    let filename = filename.join(destination_dir.file_name().unwrap());
-    info!("{}", filename.to_str().unwrap());
-    String::from("/".to_string() + filename.to_str().unwrap())
+    let filename = filename.join(destination_dir.file_name().unwrap()); */
+    let name = destination_dir.file_name().unwrap();
+    // info!("{}", filename.to_str().unwrap());
+    String::from("/".to_string() + name.to_str().unwrap())
 }
 
 fn get_source_dir(src: &str, course_name: &str) -> PathBuf {

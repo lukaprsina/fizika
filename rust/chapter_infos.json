@@ -5,7 +5,7 @@
     "goals": null,
     "year": null,
     "original_name": "material-931- Astronomija/index.html",
-    "uuid": "facacf55-c830-420a-8425-829d220df8d5"
+    "uuid": "fca591c9-f011-40b3-b80d-a8afa85ed533"
   },
   {
     "heading": "0. Gravitacija, Kepplerjevi zakoni",
@@ -13,7 +13,7 @@
     "goals": " Poznavanje in uporaba gravitacijskega zakona.\nPoznavanje  in uporaba Kepperjevih zakonov.",
     "year": null,
     "original_name": "material-936- Keppler/index.html",
-    "uuid": "c37fe315-9203-45e2-baa0-b222061ad72e"
+    "uuid": "608f6313-e590-418f-96e6-2cf8479a9efc"
   },
   {
     "heading": "1. Kviz o premem gibanju",
@@ -21,7 +21,7 @@
     "goals": " Preverjaje znanja dijakov o premem gibanju.",
     "year": null,
     "original_name": "material-621- KVIZ premo gibanje/index.html#state=1",
-    "uuid": "3098c2b9-5307-48bd-a89a-68dbb863cf4b"
+    "uuid": "e299db1d-168c-4f71-ba5b-1f6aa96d5ef9"
   },
   {
     "heading": "2. Plinski zakoni - kviz",
@@ -29,7 +29,7 @@
     "goals": null,
     "year": null,
     "original_name": "material-636-plinski_zakoni_kviz/index.html#state=1",
-    "uuid": "2b677412-80b2-4f6e-82b4-5492a3d74ac9"
+    "uuid": "ed074de1-a6a9-465c-bd01-b83659b24a98"
   },
   {
     "heading": "1. Merjenje",
@@ -37,7 +37,7 @@
     "goals": " Poznavanje merskih količin, osnovnih enot. Pretvarjanje med enotami. Napake (merske, sistemske, absolutne, relativne...)",
     "year": null,
     "original_name": "material-802- merjenje/index.html#state=1",
-    "uuid": "ab2d9e34-fa95-47d9-8784-d59fc3121637"
+    "uuid": "c1e879fa-78cd-406d-945f-ead7c95914fa"
   },
   {
     "heading": "1. Fizikalne količine in merske enote",
@@ -45,7 +45,7 @@
     "goals": null,
     "year": null,
     "original_name": "material-943-s Merjenje2 - Andreja/index.html#state=1",
-    "uuid": "88ba3436-3631-4adc-8848-679ae6c94cc1"
+    "uuid": "d9d08a93-5c03-4f60-a1f8-59f8fbc8e15a"
   },
   {
     "heading": "1. 2D - vodoravni ter poševni met",
@@ -53,7 +53,7 @@
     "goals": " Razumevanje in reševanje nalog iz vodoravnega meta.",
     "year": null,
     "original_name": "material-614- 2D gibanje/index.html#state=1",
-    "uuid": "47914c8e-f572-4a47-bbdf-7a07d937c582"
+    "uuid": "dc3f7441-a428-441f-88bc-5c51f39cea81"
   },
   {
     "heading": "1. Merjenje sil",
@@ -61,7 +61,7 @@
     "goals": " Poznati in razumeti linearno odvisnost deformacije od sile.",
     "year": null,
     "original_name": "material-673- Merjenje sil/index.html#state=1",
-    "uuid": "69a29c3f-5c78-4633-a964-79d88b6cab2f"
+    "uuid": "88f0dfab-2e23-4e1b-a9c4-3c827134ef09"
   },
   {
     "heading": "1. Vleka objektov",
@@ -69,7 +69,7 @@
     "goals": " Pri opazovanju vleke pridemo do zanimivih ugotovitev. V nadaljevanju bomo razložili kako se s tem sooča fizika in zakaj so rezultati tekmovanj predvidljivi.",
     "year": null,
     "original_name": "material-229-vleka objektov/index.html",
-    "uuid": "3e2430fc-12b7-4f0a-a4cd-11c2d63e170d"
+    "uuid": "eaad7045-5843-4f76-995e-b9cba645f041"
   },
   {
     "heading": "1. I. Newton",
@@ -77,7 +77,7 @@
     "goals": " Razstavljanje sil. Reševanje linearnih enačb.",
     "year": null,
     "original_name": "material-372- I Newton/index.html#state=1",
-    "uuid": "e811c3ef-fe10-43d8-b31e-3d7e0177531d"
+    "uuid": "923472b5-1890-4e81-ab4d-1ef31c895ef1"
   },
   {
     "heading": "1. II. Newtonov zakon",
@@ -85,7 +85,7 @@
     "goals": " Delovanje okolice ima za posledico spremembo gibanja opazovanega telesa.",
     "year": null,
     "original_name": "material-667- II Newtnov zakon/index.html#state=1",
-    "uuid": "3c95d0dd-4912-410b-8970-3afdc5294caa"
+    "uuid": "c078da45-4f64-4589-b51c-7ed2b175a847"
   },
   {
     "heading": "1. III. Newtonov zakon",
@@ -93,7 +93,7 @@
     "goals": " Spoznati in upoštevati, da je delovanje teles vzajemno.",
     "year": null,
     "original_name": "material-922- III NZ/index.html#state=1",
-    "uuid": "3ff0dd1c-abff-4017-b68e-e0be084c1b95"
+    "uuid": "de402e73-8b1f-4d6c-b94d-336416275eec"
   },
   {
     "heading": "1. klanec",
@@ -101,7 +101,7 @@
     "goals": " razumeti potrebne pogoje za mirovanje na klancu.",
     "year": null,
     "original_name": "material-774- Klanec/index.html#state=1",
-    "uuid": "a377fb9d-b641-4f15-acdc-ace3efa0e967"
+    "uuid": "ed10b833-f3fb-4e58-aea1-50b89f64deea"
   },
   {
     "heading": "1. Navor",
@@ -109,7 +109,7 @@
     "goals": " Razumevanje količine navora in njegove uporabe v življenju. ",
     "year": null,
     "original_name": "material-626- navor/index.html#state=1",
-    "uuid": "623c4368-ad9b-4834-80d8-3564783022b3"
+    "uuid": "6e7d9171-132d-4d77-b3cf-2dd3156e2ae4"
   },
   {
     "heading": "1. Zgradba snovi",
@@ -117,7 +117,7 @@
     "goals": null,
     "year": null,
     "original_name": "material-912- Zgradba snovi/index.html#state=1",
-    "uuid": "e22b2fb8-1b25-4234-93d4-b9f2995f4bd0"
+    "uuid": "df3896db-46e6-4a7e-b500-94e2eef927a5"
   },
   {
     "heading": "2. Tlak",
@@ -125,7 +125,7 @@
     "goals": " Povezovanje tlačnih obremenitev s površino in silo.",
     "year": null,
     "original_name": "material-378- tlak tekočine/index.html#state=1",
-    "uuid": "ef984396-6cb9-4540-95ac-b385c64cc600"
+    "uuid": "f5f4d8e9-4649-4414-bd13-1735a4bcd060"
   },
   {
     "heading": "2. Vzgon",
@@ -133,7 +133,7 @@
     "goals": " Razumet in uporabit povezave med potrebnimi količinami (gostota, tlak, globina, prostornima).",
     "year": null,
     "original_name": "material-635- Vzgon/index.html#state=1",
-    "uuid": "0084aa4f-5786-4f88-9d80-cee89ce8880b"
+    "uuid": "b16972fb-5cdd-47cf-8ca3-0f7447d27145"
   },
   {
     "heading": "2. Pretoki tekočin",
@@ -141,7 +141,7 @@
     "goals": " Povezati pretoke tekočine z obliko cevi.",
     "year": null,
     "original_name": "material-907- Pretoki tekocin/index.html#state=1",
-    "uuid": "013bcd3c-a925-47b2-8107-0f5359b9791b"
+    "uuid": "7e2cb16f-53b8-4762-a468-8daf12a275e3"
   },
   {
     "heading": "2. Gibalna količina",
@@ -149,7 +149,7 @@
     "goals": " Gibalna količina homogenega telesa, trki, sila curka",
     "year": null,
     "original_name": "material-582- gibalna količina/index.html#state=1",
-    "uuid": "4a69f4fb-c5ea-48b2-9aae-92773742acc1"
+    "uuid": "18d68702-3336-40d5-816d-3ece50bfdd7e"
   },
   {
     "heading": "2. Delo ter moč, delo tlaka",
@@ -157,7 +157,7 @@
     "goals": " Dijaki znajo ločiti med notranjimi in zunanjimi silami na opazovati sistem ter znajo določiti premike posameznih sil ter z njimi povezanim delom.",
     "year": null,
     "original_name": "material-938- Delo/index.html#state=1",
-    "uuid": "a119b94b-498c-44fe-ae5e-a557e49932b9"
+    "uuid": "4ffe9217-e18f-4147-a637-c85eb4c32f83"
   },
   {
     "heading": "2. Energija sistema ter delo na sistem",
@@ -165,7 +165,7 @@
     "goals": " A, P, W",
     "year": null,
     "original_name": "material-364- energija sistema/index.html#state=1",
-    "uuid": "5b7010e5-126b-4b8e-a60f-b5976954099f"
+    "uuid": "01a74049-b03a-42ad-841b-8a217d030449"
   },
   {
     "heading": "2. Gibanje tekočin - Bernoulli",
@@ -173,7 +173,7 @@
     "goals": " Gibanje tekočin,  stabilnost kritine...",
     "year": null,
     "original_name": "material-898- Gibanje tekocin - Bernoulli/index.html#state=1",
-    "uuid": "6d709446-6469-4658-abdc-00a1fd1ac01b"
+    "uuid": "9d8d3668-60bc-4848-a983-72f7b36fcbb3"
   },
   {
     "heading": "2. Temperatura in raztezanje snovi",
@@ -181,7 +181,7 @@
     "goals": null,
     "year": null,
     "original_name": "material-414- temperaturo raztezanje/index.html#state=1",
-    "uuid": "a6a254a4-e4e1-42db-8c0b-a08a1d576b3b"
+    "uuid": "69bd80b2-c65e-47c1-9e37-be08f1766fed"
   },
   {
     "heading": "2. Plini",
@@ -189,7 +189,7 @@
     "goals": " Razumeti povezave med parametri idealnega plina in uporaba v nalogah.",
     "year": null,
     "original_name": "material-895- Plini/index.html#state=1",
-    "uuid": "c68e1835-fd80-4a60-9466-c61c2b487053"
+    "uuid": "a6f259f5-c86c-4e72-b1b0-e78f08615987"
   },
   {
     "heading": "2. Toplota - notranja energija",
@@ -197,7 +197,7 @@
     "goals": null,
     "year": null,
     "original_name": "material-958- Notranja energija/index.html#state=1",
-    "uuid": "9fd3c273-f333-44ff-b380-f8722d3ccb7f"
+    "uuid": "a20d8c3b-c670-4d57-a00d-3039c9c46579"
   },
   {
     "heading": "2. pV diagrami in toplotni stroji",
@@ -205,7 +205,7 @@
     "goals": " Risanje pV diagramov ter interpretacija narisanega.",
     "year": null,
     "original_name": "material-910- Toplotni stroj/index.html#state=1",
-    "uuid": "f70a686a-985f-4e34-b719-e6ec0f605618"
+    "uuid": "4fcb55d1-2ed6-4bdc-9919-0bb8fd66a926"
   },
   {
     "heading": "2. Sevanje",
@@ -213,7 +213,7 @@
     "goals": " Znanje in uporaba fotoefekta. Uporaba Štefanovega zakona za sevanje črnega telesa. Poznavanje Solarne konstante in energijskega toka.",
     "year": null,
     "original_name": "material-819- Sevanje crnega telesa/index.html#state=1",
-    "uuid": "dbb78d05-586c-4ce4-b0b6-a9a4f4950aba"
+    "uuid": "29261f22-b9d9-48f5-890a-42e18fa8005d"
   },
   {
     "heading": "3. elektrostatika 0: naboj, polje, kondenzator",
@@ -221,7 +221,7 @@
     "goals": " definicija naboja, uporaba opisa električnega polja, kondenzatorji in vezava",
     "year": null,
     "original_name": "material-883- Elektrostatika/index.html#state=1",
-    "uuid": "be2db5cc-c1a4-4f9c-b269-906df338af15"
+    "uuid": "063f3b52-a6a5-4f2d-9ae2-848abd275ccf"
   },
   {
     "heading": "3. elektrostatika 1:gibanje v E in energija polja",
@@ -229,7 +229,7 @@
     "goals": " Energija kondenzatorja in gibanje delca v E polju.",
     "year": null,
     "original_name": "material-902- Gibanje e v E/index.html#state=1",
-    "uuid": "06c38c1c-f29b-4410-b117-2fd9aef47ff7"
+    "uuid": "41848c39-f7ec-4b5c-9a18-61fbf2eb65fd"
   },
   {
     "heading": "3. električni tok DC",
@@ -237,7 +237,7 @@
     "goals": " Spoznati pojave povezane z električnim tokom in njihovo uporabo.",
     "year": null,
     "original_name": "material-897- DC tok/index.html#state=1",
-    "uuid": "5b2abd77-74ac-40cb-a83d-ef33d30854fb"
+    "uuid": "620d3b6b-e573-4be6-869d-97f8f15e4ca9"
   },
   {
     "heading": "3. magnetizem",
@@ -245,7 +245,7 @@
     "goals": " magneti, magnetno polje tokovodnika, gibanje delca v magnetnem polju",
     "year": null,
     "original_name": "material-901- Magnetizem/index.html#state=1",
-    "uuid": "06dcb1fe-2893-4848-b7db-46fb47cfdcdd"
+    "uuid": "e3819adf-ece3-48a2-9522-a5a9a2681eb2"
   },
   {
     "heading": "3. magnetizem - indukcija",
@@ -253,7 +253,7 @@
     "goals": " Razumeti indukcijo,\ndelovanje transformatorja...",
     "year": null,
     "original_name": "material-909- indukcija/index.html#state=1",
-    "uuid": "8fb7b91e-a3e9-4869-adb0-aadc76fddd15"
+    "uuid": "3d84b520-9f56-4e09-b151-8978668924cd"
   },
   {
     "heading": "3. Prehodni pojavi C in L",
@@ -261,7 +261,7 @@
     "goals": " Spoznati in upoštevati polnjenje in praznjenje kondenzatorja tuljave.",
     "year": null,
     "original_name": "material-919- Prehodni pojavi C in L/index.html#state=1",
-    "uuid": "0491bd31-a035-4044-89bb-c0436f921190"
+    "uuid": "5877fce6-2f87-4d70-b180-13dc8ebebc17"
   },
   {
     "heading": "3. transformator",
@@ -269,7 +269,7 @@
     "goals": " Razumevanje delovanja transformatorja in njegove uporabe.",
     "year": null,
     "original_name": "material-924- Transformator/index.html#state=1",
-    "uuid": "d9571df4-22f4-4542-a829-6934bf113c0e"
+    "uuid": "12ff97b7-6c26-4c08-b0b5-a46eef2e79b2"
   },
   {
     "heading": "4. Nihanje",
@@ -277,7 +277,7 @@
     "goals": " Razumeti harmonično nihanje, nihajni čas, frekvenca,  dušenje, vsiljeno nihanje, resonanca",
     "year": null,
     "original_name": "material-627- Nihanje/index.html#state=1",
-    "uuid": "8187fca5-20d6-4fd4-8e6c-7dab5748612e"
+    "uuid": "c33c24ff-a2b7-498d-b5ac-26688b3c9e4a"
   },
   {
     "heading": "4. Valovanje",
@@ -285,7 +285,7 @@
     "goals": " valovna fronta, motnja, širjenje valovanja, zvok, svetloba...",
     "year": null,
     "original_name": "material-657- Valovanje/index.html#state=1",
-    "uuid": "45611835-4aa2-4ad4-9451-1de37ffd0953"
+    "uuid": "592273fd-37f3-482a-9a1f-4da4c17324a4"
   },
   {
     "heading": "4. Svetloba, lomni količnik",
@@ -293,7 +293,7 @@
     "goals": " Znanje valovne optike, energijski spekter vidne svetlobe",
     "year": null,
     "original_name": "material-863- Lomni kolicnik/index.html#state=1",
-    "uuid": "9adb1586-0822-46ab-bf19-66ed4d39663f"
+    "uuid": "c84b2e22-5b5c-45f8-b189-7dfa7df7a9c7"
   },
   {
     "heading": "4. geometrijska optika",
@@ -301,7 +301,7 @@
     "goals": " Preslikave zrcal  (ravno zrcalo, ubočeno, izbočeno zrcalo) in leč (zbiralne, razpršilne).\n\nOptični instrumenti (lupa, mikroskop...)",
     "year": null,
     "original_name": "material-758- Geometrijska/index.html#state=1",
-    "uuid": "d4ecf536-0a55-4e9e-964b-b2964b4cf476"
+    "uuid": "6bb481c1-9041-40c7-a555-eaf416ceec5d"
   },
   {
     "heading": "4. atom, fotoefekt, rentgen, razpadi",
@@ -309,7 +309,7 @@
     "goals": " Zgradba atoma. razporeditev delcev v atomu. Energije posameznih delcev. Fotoefekt. Rentgen.",
     "year": null,
     "original_name": "material-917- Atomika/index.html#state=1",
-    "uuid": "82533cc0-4d66-48e7-83f5-ece1bd19bb10"
+    "uuid": "735151f0-a702-4475-b5b8-7b8313f15dea"
   },
   {
     "heading": "4. Teorija relativnosti",
@@ -317,6 +317,6 @@
     "goals": " Spoznati, kaj k fiziki in svetu okoli nas prinašajo ugotovitve Einsteinove splošne in posebne teorije relativnosti.",
     "year": null,
     "original_name": "material-925- Teorija relativnosti/index.html#state=1",
-    "uuid": "07285828-fe06-43f4-8e1c-c26546cd84f5"
+    "uuid": "fa292cf7-f8c4-4447-86b7-5a3b961cb1a9"
   }
 ]

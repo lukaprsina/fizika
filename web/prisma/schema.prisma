@@ -104,8 +104,16 @@ model Page {
     @@id([topicId, id])
 }
 
+enum ResourceType {
+    User
+    Topic
+    Page
+}
+
 model Resource {
-    id Int @id @default(autoincrement())
+    id   Int          @id @default(autoincrement())
+    type ResourceType @default(Page)
+    name String
 
     course Course?
     topic  Topic?
