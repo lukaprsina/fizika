@@ -3,7 +3,7 @@ use select::{
     node::Node,
     predicate::{self, And, Class, Comment, Name},
 };
-use tracing::{info, warn};
+use tracing::warn;
 
 use crate::{
     copy_gradivo::{copy_gradivo, GradivoType},
@@ -20,6 +20,7 @@ pub fn recurse_node(
     contents: &mut Vec<(String, ElementSpacing)>,
     question_mark_course: &mut usize,
     chapter_infos: &Vec<ChapterInfo>,
+    page_num: usize,
 ) {
     if node.is(Class("placeholder-for-subslides")) {
         return;
@@ -45,8 +46,13 @@ pub fn recurse_node(
                         let img = get_only_element(imgs);
                         let src = img.attr("src").unwrap().to_string();
 
-                        let new_src =
-                            copy_gradivo(&src, &course_name, chapter_infos, GradivoType::Image);
+                        let new_src = copy_gradivo(
+                            &src,
+                            &course_name,
+                            chapter_infos,
+                            GradivoType::Image,
+                            page_num,
+                        );
 
                         let caption = match captions.len() {
                             1 => {
@@ -90,6 +96,7 @@ pub fn recurse_node(
                                 &course_name,
                                 chapter_infos,
                                 GradivoType::Video,
+                                page_num,
                             );
 
                             if !(href.ends_with(".mp4")
@@ -292,6 +299,7 @@ pub fn recurse_node(
                 contents,
                 question_mark_course,
                 chapter_infos,
+                page_num,
             );
         }
     }

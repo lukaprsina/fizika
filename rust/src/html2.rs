@@ -210,6 +210,7 @@ fn process_chapter(
             &output_page_path,
             course_name.clone(),
             chapter_infos,
+            page_num,
         )?;
     }
 
@@ -221,6 +222,7 @@ fn parse_exercise2(
     output_page_path: &Path,
     course_name: String,
     chapter_infos: &Vec<ChapterInfo>,
+    page_num: usize,
 ) -> Result<()> {
     match process_exercise(&exercise.document) {
         Ok(result) => {
@@ -241,7 +243,13 @@ fn parse_exercise2(
                     }
                 }
 
-                write_node_to_file(&mut index_file, area, course_name.clone(), chapter_infos);
+                write_node_to_file(
+                    &mut index_file,
+                    area,
+                    course_name.clone(),
+                    chapter_infos,
+                    page_num,
+                );
             }
         }
         Err(err) => {
@@ -268,7 +276,13 @@ fn parse_exercise2(
             }
         }
 
-        write_node_to_file(&mut file, area, course_name.clone(), chapter_infos);
+        write_node_to_file(
+            &mut file,
+            area,
+            course_name.clone(),
+            chapter_infos,
+            page_num,
+        );
     }
 
     Ok(())
@@ -299,6 +313,7 @@ fn write_node_to_file(
     area: select::node::Node,
     course_name: String,
     chapter_infos: &Vec<ChapterInfo>,
+    page_num: usize,
 ) {
     let mut parents: Vec<Option<String>> = Vec::new();
     let mut question_mark_course = 0;
@@ -311,6 +326,7 @@ fn write_node_to_file(
         &mut contents,
         &mut question_mark_course,
         chapter_infos,
+        page_num,
     );
 
     let result = contents_to_string(contents);

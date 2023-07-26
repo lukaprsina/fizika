@@ -4,7 +4,6 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use tracing::info;
 use uuid::Uuid;
 
 use crate::utils::ChapterInfo;
@@ -33,9 +32,11 @@ pub fn copy_gradivo(
     course_name: &str,
     chapter_infos: &Vec<ChapterInfo>,
     gradivo_type: GradivoType,
+    page_num: usize,
 ) -> String {
     let source_dir = get_source_dir(src, course_name);
-    let (destination_dir, dir_uuid) = get_destination_dir(chapter_infos, course_name, gradivo_type);
+    let (destination_dir, _) =
+        get_destination_dir(chapter_infos, course_name, page_num, gradivo_type);
     let destination_dir = destination_dir.join(source_dir.file_name().unwrap());
     unsafe {
         COPY_LIST.push((source_dir.clone(), destination_dir.clone()));
@@ -85,6 +86,7 @@ fn get_source_dir(src: &str, course_name: &str) -> PathBuf {
 fn get_destination_dir(
     chapter_infos: &Vec<ChapterInfo>,
     course_name: &str,
+    page_num: usize,
     gradivo_type: GradivoType,
 ) -> (PathBuf, Uuid) {
     let gradivo_out_path = Path::new("gradivo_out");
@@ -109,7 +111,10 @@ fn get_destination_dir(
         panic!("{:#?}", folder);
     }
 
-    let subfolder = gradivo_type.to_string();
+    let dir_with_page_num = folder.join(page_num.to_string());
+    let dir_with_type = dir_with_page_num.join(gradivo_type.to_string());
 
-    (folder.join(subfolder), ci.uuid)
+    fs::create_dir_all(dir_with_type.clone()).unwrap();
+
+    (dir_with_type, ci.uuid)
 }
