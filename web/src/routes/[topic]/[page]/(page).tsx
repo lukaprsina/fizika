@@ -56,6 +56,16 @@ export function routeData({ params }: RouteDataArgs) {
             }
         })
 
+        // move this to resource shit
+        const path = await prisma.topic.findUnique({
+            where: {
+                id: topic.id,
+            },
+            select: {
+                path: true
+            }
+        })
+
         return { page_count, session }
     }, {
         key: () => ["page", decodeURIComponent(params.topic), decodeURIComponent(params.page)]
@@ -121,12 +131,17 @@ const PageTab = () => {
         topic_title: string, page_id: number
     }, {
         page: PageMarkdownType,
-        page_count: number
+        page_count: number,
+        topic_uuid: string
     }>(
         async ({ topic_title, page_id }) => {
             const topic = await prisma.topic.findUnique({
                 where: {
                     title: topic_title
+                },
+                select: {
+                    id: true,
+                    path: true,
                 }
             });
 
@@ -137,6 +152,10 @@ const PageTab = () => {
                     topicId: topic.id,
                 }
             })
+
+            if (typeof page_id != "number" || isNaN(page_id)) {
+                return { page_count }
+            }
 
             const page = await prisma.page.findUnique({
                 where: {
@@ -154,7 +173,8 @@ const PageTab = () => {
 
             return {
                 page: page ?? undefined,
-                page_count
+                page_count,
+                topic_uuid: topic.path
             }
         });
 
@@ -332,6 +352,7 @@ const PageTab = () => {
                                     title: title()
                                 }}
                                 preloaded={preloadedPages()}
+                                topic_uuid={page_resource()?.topic_uuid}
                             />
                         </div>
                     </div>
@@ -353,6 +374,7 @@ const PageTab = () => {
                         title={title()}
                         content={content}
                         setContent={setContent}
+                        topic_uuid={page_resource()?.topic_uuid}
                     />
                     <NavButtons
                         keyboard={true}

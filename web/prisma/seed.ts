@@ -83,6 +83,7 @@ async function main() {
                 id: i,
                 title: config_json.heading,
                 year: config_json.year,
+                path: config_json.uuid,
                 authors: {
                     connect: authors
                 },
@@ -118,15 +119,6 @@ async function main() {
                         console.log("\t\tpopup", popup_file, popup_path)
 
                         const file = fs.readFileSync(popup_path);
-                        /* const popup = await prisma.modal.create({
-                            data: {
-                                html: file.toString(),
-                                text: "Modal text",
-                                heading: "Modal heading"
-                            }
-                        });
-    
-                        popup_ids.push({ id: popup.id }) */
 
                         // place popups to main markdown
                         const id = popup_file.replace(".html", "")

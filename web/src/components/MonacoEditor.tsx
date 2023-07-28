@@ -14,9 +14,10 @@ type MonacoEditorType = {
     active: boolean;
     initial?: string;
     content: Accessor<string>;
+    setContent: Setter<string>;
+    topic_uuid?: string;
     id: number;
     title?: string;
-    setContent: Setter<string>
 };
 
 const [editorInitialized, setEditorInitialized] = createSignal(false);
@@ -116,6 +117,7 @@ const MonacoEditor: Component<MonacoEditorType> = (props) => {
                             markdown: props.content(),
                             title: props.title ?? undefined
                         }}
+                        topic_uuid={props.topic_uuid}
                     />
                 </div>
             </div>

@@ -37,18 +37,42 @@ pub fn copy_gradivo(
     let source_dir = get_source_dir(src, course_name);
     let (destination_dir, _) =
         get_destination_dir(chapter_infos, course_name, page_num, gradivo_type);
-    let destination_dir = destination_dir.join(source_dir.file_name().unwrap());
-    unsafe {
-        COPY_LIST.push((source_dir.clone(), destination_dir.clone()));
-    }
 
     /* let filename = PathBuf::from("gradivo");
     let filename = filename.join(dir_uuid.to_string());
     let filename = filename.join(gradivo_type.to_string());
     let filename = filename.join(destination_dir.file_name().unwrap()); */
-    let name = destination_dir.file_name().unwrap();
-    // info!("{}", filename.to_str().unwrap());
-    String::from("/".to_string() + name.to_str().unwrap())
+    let name = source_dir
+        .file_stem()
+        .unwrap()
+        .to_str()
+        .unwrap()
+        .to_string();
+
+    let extension = match source_dir.extension() {
+        Some(ext) => Some(ext.to_str().unwrap().to_string()),
+        None => None,
+    };
+
+    let result = if let Some(ext) = extension.clone() {
+        format!("{}.{}", name, ext.to_lowercase())
+    } else {
+        name.clone()
+    };
+
+    let destination_dir = destination_dir.join(result.clone());
+    unsafe {
+        COPY_LIST.push((source_dir.clone(), destination_dir.clone()));
+    }
+
+    /* info!(
+        "{}! {}, name: {}, ext: {:#?}",
+        destination_dir.to_str().unwrap(),
+        result,
+        name.clone(),
+        extension
+    ); */
+    result
 }
 
 fn get_source_dir(src: &str, course_name: &str) -> PathBuf {

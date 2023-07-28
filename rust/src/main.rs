@@ -6,6 +6,8 @@ use fizika::{
     javascript::parse_js, scrape::scrape_normal,
 };
 
+static COPY_GRADIVO: bool = true;
+
 #[tokio::main]
 pub async fn main() -> Result<()> {
     init()?;
@@ -22,25 +24,27 @@ pub async fn main() -> Result<()> {
     println!("extract_html");
     to_markdown()?;
 
-    unsafe {
-        let mut result = String::new();
-        let len = COPY_LIST.len();
+    if COPY_GRADIVO {
+        unsafe {
+            let mut result = String::new();
+            let len = COPY_LIST.len();
 
-        for (pos, item) in COPY_LIST.iter().enumerate() {
-            // tokio::spawn(tokio::fs::copy(item.0.clone(), item.1.clone()));
-            if pos % 100 == 0 {
-                println!("{}", pos as f32 / len as f32);
+            for (pos, item) in COPY_LIST.iter().enumerate() {
+                // tokio::spawn(tokio::fs::copy(item.0.clone(), item.1.clone()));
+                if pos % 100 == 0 {
+                    println!("{}", pos as f32 / len as f32);
+                }
+
+                fs::copy(item.0.clone(), item.1.clone())?;
+                result.push_str(&format!(
+                    "{} -> {}\n",
+                    item.0.to_str().unwrap().to_string(),
+                    item.1.to_str().unwrap().to_string()
+                ));
             }
 
-            fs::copy(item.0.clone(), item.1.clone())?;
-            result.push_str(&format!(
-                "{} -> {}\n",
-                item.0.to_str().unwrap().to_string(),
-                item.1.to_str().unwrap().to_string()
-            ));
+            fs::write("copy_list.txt", result)?;
         }
-
-        fs::write("copy_list.txt", result)?;
     }
 
     Ok(())

@@ -69,6 +69,7 @@ model Topic {
     title  String  @unique
     year   Int
     active Boolean @default(true)
+    path   String
 
     pages   Page[]
     authors User[]

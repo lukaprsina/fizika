@@ -72,6 +72,10 @@ pub fn to_markdown() -> Result<()> {
             continue;
         }
 
+        unsafe {
+            PAGE_COUNT = 0;
+        }
+
         if !process_chapter(i, courses_dir, output_dir, &mut chapter_infos)? {
             break;
         }
@@ -217,6 +221,8 @@ fn process_chapter(
     Ok(true)
 }
 
+static mut PAGE_COUNT: usize = 0;
+
 fn parse_exercise2(
     exercise: Exercise,
     output_page_path: &Path,
@@ -241,15 +247,16 @@ fn parse_exercise2(
                     if PAGE_NAME {
                         println!("Course:\t{:#?}", index_path);
                     }
-                }
+                    PAGE_COUNT += 1;
 
-                write_node_to_file(
-                    &mut index_file,
-                    area,
-                    course_name.clone(),
-                    chapter_infos,
-                    page_num,
-                );
+                    write_node_to_file(
+                        &mut index_file,
+                        area,
+                        course_name.clone(),
+                        chapter_infos,
+                        PAGE_COUNT,
+                    );
+                }
             }
         }
         Err(err) => {
@@ -297,16 +304,6 @@ pub enum ElementSpacing {
     ListElement,
     Alone,
 }
-
-/*
-text je NewlineBeforeAndAfter,
-bold, italic, equation, inline stvari so Inline in overridajo NewlineBeforeAndAfter
-Inline rabijo en space prej in potem
-<...> je NewlineBefore,
-</...> je NewlineAfter,
-![]() je Alone,
-List je NewlineAfter
-*/
 
 fn write_node_to_file(
     file: &mut File,
