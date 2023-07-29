@@ -39,6 +39,8 @@ type ListProps = {
 
 type ListItemState = "dragged" | "retreating" | "stationary"
 
+const ITEM_HEIGHT = 52;
+
 const List: VoidComponent<ListProps> = (props) => {
     const [itemsState, setItemsState] = createSignal<ListItemState>("stationary");
     const [selectedCoords, setSelectedCoords] = createSignal<{ x: number, y: number, item_id: number | undefined }>({
@@ -47,7 +49,6 @@ const List: VoidComponent<ListProps> = (props) => {
         item_id: undefined
     })
 
-    // TODO: items should jump to mouse cursor
     const [selectedIds, setSelectedIds] = createStore<boolean[]>([]);
 
     createEffect(() => {
@@ -96,17 +97,10 @@ const List: VoidComponent<ListProps> = (props) => {
                     })
 
                     const style = createSpring(() => {
-                        let new_y = coords().y
-                        if (itemsState() == "dragged" &&
-                            checked() &&
-                            selectedCoords().item_id !== item.id)
-                            new_y -= 44
-                        // TODO: Prefix Sum Array 
-
                         return {
                             to: {
                                 x: coords().x,
-                                y: new_y,
+                                y: coords().y,
                                 zIndex: zIndex()
                             },
                             onRest: () => itemsState() != "dragged" ? setItemsState("stationary") : null,
@@ -115,8 +109,20 @@ const List: VoidComponent<ListProps> = (props) => {
                     })
 
                     createEffect(() => {
-                        if (!checked()) return
-                        setCoords(selectedCoords())
+                        const dragged_id = selectedCoords().item_id;
+                        if (typeof dragged_id !== "number" || !checked()) return
+
+                        let new_y = selectedCoords().y
+                        if (itemsState() == "dragged" && selectedCoords().item_id !== item.id) {
+                            const height_diff = (dragged_id - item.id - 1) * ITEM_HEIGHT
+                            new_y += height_diff
+                            console.log(dragged_id, item.id, height_diff)
+                        }
+
+                        setCoords({
+                            x: selectedCoords().x,
+                            y: new_y
+                        })
                     })
 
                     return (
