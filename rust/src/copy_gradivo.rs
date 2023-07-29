@@ -4,6 +4,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use tracing::info;
 use uuid::Uuid;
 
 use crate::utils::ChapterInfo;
@@ -34,6 +35,7 @@ pub fn copy_gradivo(
     gradivo_type: GradivoType,
     page_num: usize,
 ) -> String {
+    info!(page_num, src);
     let source_dir = get_source_dir(src, course_name);
     let (destination_dir, _) =
         get_destination_dir(chapter_infos, course_name, page_num, gradivo_type);

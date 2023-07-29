@@ -25,7 +25,7 @@ export default function Root() {
         <Meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta name="theme-color" content="#026d56" />
         <Meta name="description" content="fizika.sc-nm.si" />
-        <Link rel="icon" href="/favicon.ico" />
+        <Link rel="icon" href="/images/scnm-logo.jpg" />
       </Head>
       <Body>
         <trpc.Provider queryClient={queryClient}>

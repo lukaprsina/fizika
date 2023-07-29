@@ -43,6 +43,8 @@ type ParamsType = {
     page: string;
 }
 
+type MimeType = "image" | "video"
+
 const Markdown: VoidComponent<MarkdownProps> = (props) => {
     const [content, setContent] = createSignal<JSX.Element>();
     const [components, setComponents] = createSignal<any>();
@@ -52,26 +54,39 @@ const Markdown: VoidComponent<MarkdownProps> = (props) => {
     createEffect(() => {
         const components_mid = {
             img: (breh: { src: string, alt: string }) => {
-                const [mimeType, setMimeType] = createSignal("");
+                const [mimeType, setMimeType] = createSignal<MimeType | undefined>();
 
                 createEffect(() => {
-                    setMimeType(getType(breh.src))
+                    const bleh = getType(breh.src)
+                    if (bleh.startsWith("image"))
+                        setMimeType("image")
+                    else if (bleh.startsWith("video"))
+                        setMimeType("video")
+                    else
+                        setMimeType()
                 });
 
-                // public\gradivo\4b42b35e-6a85-4211-8c2f-f914f4f47c9d\9\videos\Geometric_Optics_Mirrors_zbiralno.mp4
-                const src = `/gradivo/${props.topic_uuid}/${params.page}/images/${breh.src}`
+                const src = createMemo(() => {
+                    let muh_type;
+                    if (mimeType() == "image")
+                        muh_type = "images"
+                    else if (mimeType() == "video")
+                        muh_type = "videos"
+                    else return;
+                    return `/gradivo/${props.topic_uuid}/${params.page}/${muh_type}/${breh.src}`
+                })
 
                 return <Switch fallback={<p>{breh.alt}</p>}>
-                    <Match when={mimeType().startsWith("image")}>
+                    <Match when={src() && mimeType() == "image"}>
                         <figure>
-                            <img src={src} alt={breh.alt} />
+                            <img loading="lazy" src={src()} alt={breh.alt} />
                             <figcaption>{breh.alt}</figcaption>
                         </figure>
                     </Match>
-                    <Match when={mimeType().startsWith("video")}>
+                    <Match when={src() && mimeType() == "video"}>
                         <figure>
                             <video>
-                                <source src={breh.src} />
+                                <source src={src()} />
                             </video>
                             <figcaption>{breh.alt}</figcaption>
                         </figure>

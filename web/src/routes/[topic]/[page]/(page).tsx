@@ -2,7 +2,7 @@ import { createShortcut } from "@solid-primitives/keyboard";
 import { Button } from "solid-headless";
 import { HiOutlineArrowLeft, HiOutlineArrowRight } from 'solid-icons/hi';
 import type { VoidComponent, ParentComponent } from "solid-js";
-import { createResource, lazy } from "solid-js";
+import { Suspense, createResource, lazy } from "solid-js";
 import { createEffect, createSignal, Show } from "solid-js";
 import type { RouteDataArgs } from "solid-start";
 import { A, useNavigate, useParams, useRouteData } from "solid-start";
@@ -345,15 +345,17 @@ const PageTab = () => {
                         class="w-full h-full flex justify-center"
                     >
                         <div class={`w-full flex justify-center ${styles.page_content}`}>
-                            <Markdown
-                                current={{
-                                    id: pageId()!,
-                                    markdown: page_resource()?.page?.markdown,
-                                    title: title()
-                                }}
-                                preloaded={preloadedPages()}
-                                topic_uuid={page_resource()?.topic_uuid}
-                            />
+                            <Suspense fallback={<p>nalagam ...</p>}>
+                                <Markdown
+                                    current={{
+                                        id: pageId()!,
+                                        markdown: page_resource()?.page?.markdown,
+                                        title: title()
+                                    }}
+                                    preloaded={preloadedPages()}
+                                    topic_uuid={page_resource()?.topic_uuid}
+                                />
+                            </Suspense>
                         </div>
                     </div>
                     {/* <FileManager page={page_data()?.page ?? undefined} /> */}

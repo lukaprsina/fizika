@@ -247,7 +247,6 @@ fn parse_exercise2(
                     if PAGE_NAME {
                         println!("Course:\t{:#?}", index_path);
                     }
-                    PAGE_COUNT += 1;
 
                     write_node_to_file(
                         &mut index_file,
@@ -256,6 +255,8 @@ fn parse_exercise2(
                         chapter_infos,
                         PAGE_COUNT,
                     );
+
+                    PAGE_COUNT += 1;
                 }
             }
         }
