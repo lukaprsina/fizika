@@ -1,3 +1,4 @@
+// @refresh reload
 import { For, createEffect, type JSX, type VoidComponent, createSignal, Show, createMemo } from "solid-js";
 import { useDrag } from 'solid-gesture'
 import { Checkbox } from "@suid/material";
@@ -39,62 +40,83 @@ type ListProps = {
 type ListItemState = "dragged" | "retreating" | "stationary"
 
 const List: VoidComponent<ListProps> = (props) => {
-    const [selectedCoords, setSelectedCoords] = createSignal({
+    const [itemsState, setItemsState] = createSignal<ListItemState>("stationary");
+    const [selectedCoords, setSelectedCoords] = createSignal<{ x: number, y: number, item_id: number | undefined }>({
         x: 0,
-        y: 0
+        y: 0,
+        item_id: undefined
     })
 
-    // TODO: use selected ids for controlling zIndex
-    const [selectedIds, setSelectedIds] = createStore<number[]>([]);
+    // TODO: items should jump to mouse cursor
+    const [selectedIds, setSelectedIds] = createStore<boolean[]>([]);
+
+    createEffect(() => {
+        const func = () => Array(props.items.length).fill(false);
+        setSelectedIds(func)
+    })
 
     return (
         <div class="w-full flex justify-center">
             <div class="w-1/2">
                 <For each={props.items}>{(item) => {
-                    const [checked, setChecked] = createSignal(false);
-                    const [itemState, setItemState] = createSignal<ListItemState>("stationary");
                     const [coords, setCoords] = createSignal({
                         x: 0,
                         y: 0
                     })
 
+                    const checked = createMemo(() => selectedIds[item.id])
+
                     const bind = useDrag(({ down, movement: [mx, my], last, target }) => {
-                        const new_coords = { x: down ? mx : 0, y: down ? my : 0 };
+                        const new_coords = { x: down ? mx : 0, y: down ? my : 0, item_id: item.id };
 
                         if (down) {
-                            setItemState("dragged")
-                            const correct_drag = target.classList.contains("animated-div");
-                            if (!correct_drag) return;
-                            if (selectedIds.length == 0) setChecked(true)
-                            else return;
+                            const correct_element = (target as Element).classList.contains("animated-div");
+                            if (!correct_element) return;
+                            const first_check = selectedIds.find((value) => value == true);
+                            if (first_check == undefined) setSelectedIds([item.id], true)
+                            if (!checked()) return;
+
+                            setItemsState("dragged")
                         }
                         else if (last)
-                            setItemState("retreating")
-                        setSelectedCoords(new_coords)
+                            setItemsState("retreating")
+
+                        setSelectedCoords(() => new_coords)
                     })
 
                     const zIndex = createMemo(() => {
-                        if (itemState() == "dragged")
-                            return 5;
-                        else if (itemState() == "retreating")
-                            return 4;
-                        else if (itemState() == "stationary")
+                        if (!checked()) return 1;
+
+                        if (itemsState() == "dragged")
+                            return 3;
+                        else if (itemsState() == "retreating")
+                            return 2;
+                        else if (itemsState() == "stationary")
                             return 1;
                     })
 
-                    const style = createSpring(() => ({
-                        to: {
-                            x: coords().x,
-                            y: coords().y,
-                            zIndex: zIndex()
-                        },
-                        onRest: () => itemState() != "dragged" ? setItemState("stationary") : null,
-                        immediate: (key) => key === "zIndex",
-                    }))
+                    const style = createSpring(() => {
+                        let new_y = coords().y
+                        if (itemsState() == "dragged" &&
+                            checked() &&
+                            selectedCoords().item_id !== item.id)
+                            new_y -= 44
+                        // TODO: Prefix Sum Array 
+
+                        return {
+                            to: {
+                                x: coords().x,
+                                y: new_y,
+                                zIndex: zIndex()
+                            },
+                            onRest: () => itemsState() != "dragged" ? setItemsState("stationary") : null,
+                            immediate: true//(key: string) => key === "zIndex",
+                        }
+                    })
 
                     createEffect(() => {
-                        if (!checked()) return;
-                        setCoords(() => selectedCoords())
+                        if (!checked()) return
+                        setCoords(selectedCoords())
                     })
 
                     return (
@@ -107,7 +129,7 @@ const List: VoidComponent<ListProps> = (props) => {
                                 <Checkbox
                                     checked={checked()}
                                     onChange={(_, checked) => {
-                                        setChecked(checked);
+                                        setSelectedIds([item.id], checked);
                                     }}
                                 />
                             </Show>
@@ -115,6 +137,11 @@ const List: VoidComponent<ListProps> = (props) => {
                         </AnimatedDiv>
                     )
                 }}</For>
+                <button
+                    onClick={() => {
+                        console.info("Logging ids", [...selectedIds])
+                    }}
+                >Log state</button>
             </div>
         </div>
     )
