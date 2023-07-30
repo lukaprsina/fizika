@@ -29,6 +29,9 @@ dependencies:
   '@solid-auth/base':
     specifier: ^2.0.3
     version: 2.0.3(@auth/core@0.10.0)(solid-js@1.7.8)(solid-start@0.2.29)
+  '@solid-primitives/bounds':
+    specifier: ^0.0.114
+    version: 0.0.114(solid-js@1.7.8)
   '@solid-primitives/context':
     specifier: ^0.2.1
     version: 0.2.1(solid-js@1.7.8)
@@ -2209,6 +2212,18 @@ packages:
       solid-start: 0.2.29(@solidjs/meta@0.28.6)(@solidjs/router@0.8.2)(solid-js@1.7.8)(solid-start-node@0.2.29)(solid-start-vercel@0.2.29)(vite@4.4.7)
     dev: false
 
+  /@solid-primitives/bounds@0.0.114(solid-js@1.7.8):
+    resolution: {integrity: sha512-PS+PObcgzhoaY05ets7u+9/5vW+5MFcQxwaS18N9ZpxYh8dPkk8vYgJkUegz5t4jIeZrNwowI6xGBpdAQWMPqg==}
+    peerDependencies:
+      solid-js: ^1.6.12
+    dependencies:
+      '@solid-primitives/event-listener': 2.2.13(solid-js@1.7.8)
+      '@solid-primitives/resize-observer': 2.0.18(solid-js@1.7.8)
+      '@solid-primitives/static-store': 0.0.4(solid-js@1.7.8)
+      '@solid-primitives/utils': 6.2.0(solid-js@1.7.8)
+      solid-js: 1.7.8
+    dev: false
+
   /@solid-primitives/context@0.2.1(solid-js@1.7.8):
     resolution: {integrity: sha512-XIIwCOWpRKDersgkR9LNFXaJHIV8QlCFo/tq5bV0cAOZklcwOFcqi2bN+uWgEIQSWGjWXU2kc1H1/TzgYzVDlg==}
     peerDependencies:
@@ -2239,6 +2254,18 @@ packages:
 
   /@solid-primitives/media@2.2.3(solid-js@1.7.8):
     resolution: {integrity: sha512-xhKaTJjH6e65OL706/hA38WWitafbJCm/Zpv7qAn4cy/cgxZ39Cl0bPdYzZhUlkJvTt8YVT0IBcOBLKlJVaPRg==}
+    peerDependencies:
+      solid-js: ^1.6.12
+    dependencies:
+      '@solid-primitives/event-listener': 2.2.13(solid-js@1.7.8)
+      '@solid-primitives/rootless': 1.4.1(solid-js@1.7.8)
+      '@solid-primitives/static-store': 0.0.4(solid-js@1.7.8)
+      '@solid-primitives/utils': 6.2.0(solid-js@1.7.8)
+      solid-js: 1.7.8
+    dev: false
+
+  /@solid-primitives/resize-observer@2.0.18(solid-js@1.7.8):
+    resolution: {integrity: sha512-k4jTqa2hQc1HBLGUUSy69ziVJF2xlBzglUp2Saeor7RrZiWudODGyoUMdNAY+PN3iH4zyH4eEa/Fs+9kIrREig==}
     peerDependencies:
       solid-js: ^1.6.12
     dependencies:
