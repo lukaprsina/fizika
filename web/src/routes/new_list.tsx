@@ -5,6 +5,8 @@ import { Checkbox } from "@suid/material";
 import { createSpring, animated } from "solid-spring";
 import { createStore } from "solid-js/store";
 
+const IMMEDIATE = false;
+
 const App: VoidComponent = () => {
     const [items, setItems] = createSignal<ListItemProps[]>([])
 
@@ -104,23 +106,49 @@ const List: VoidComponent<ListProps> = (props) => {
                                 zIndex: zIndex()
                             },
                             onRest: () => itemsState() != "dragged" ? setItemsState("stationary") : null,
-                            immediate: true//(key: string) => key === "zIndex",
+                            immediate: IMMEDIATE ? true : (key: string) => key === "zIndex",
                         }
                     })
 
                     createEffect(() => {
                         const dragged_id = selectedCoords().item_id;
-                        if (typeof dragged_id !== "number" || !checked()) return
+                        if (typeof dragged_id !== "number") return
 
-                        let new_y = selectedCoords().y
-                        if (itemsState() == "dragged" && selectedCoords().item_id !== item.id) {
-                            const height_diff = (dragged_id - item.id - 1) * ITEM_HEIGHT
+                        let new_y = 0
+                        let new_x = 0
+                        if (checked()) {
+                            new_y = selectedCoords().y
+                            new_x = selectedCoords().x
+                            let row_count = 0;
+                            if (item.id < dragged_id) {
+                                for (let i = dragged_id; i > item.id; i--) {
+                                    if (!selectedIds[i])
+                                        row_count++;
+                                }
+                            } else {
+                                for (let i = dragged_id; i < item.id; i++) {
+                                    if (!selectedIds[i])
+                                        row_count--;
+                                }
+                            }
+
+                            if (itemsState() == "dragged" && selectedCoords().item_id !== item.id) {
+                                const height_diff = row_count * ITEM_HEIGHT
+                                new_y += height_diff
+                            }
+                        } else if (itemsState() == "dragged") {
+                            let row_count = 0;
+                            for (let i = item.id; i >= 0; i--) {
+                                if (selectedIds[i])
+                                    row_count--;
+                            }
+
+                            const height_diff = row_count * ITEM_HEIGHT
                             new_y += height_diff
-                            console.log(dragged_id, item.id, height_diff)
                         }
 
                         setCoords({
-                            x: selectedCoords().x,
+                            x: new_x,
                             y: new_y
                         })
                     })
