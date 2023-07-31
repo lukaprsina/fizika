@@ -44,6 +44,13 @@ const App: VoidComponent = () => {
     )
 }
 
+/* TODO:
+scroll not work moving,
+createEffect scroll primitive send to bus
+the dragging one checks&calculates shit and sends instructions back
+yeehaw parner
+*/
+
 type EventBusType = {
     mouseNumber: number | undefined;
     numberOfSelected: number | undefined;
@@ -89,6 +96,7 @@ const List: VoidComponent<ListProps> = (props) => {
 
         return count;
     })
+
     const event_bus = useListGroup()
     if (!event_bus) throw new Error("No event bus");
 
@@ -101,10 +109,10 @@ const List: VoidComponent<ListProps> = (props) => {
     })
 
     createEffect(() => {
-        const a = (payload: EventBusType) => {
-            console.log(props.name, payload)
+        const fn = (payload: EventBusType) => {
+            // console.log(props.name, payload)
         };
-        event_bus.listen(a)
+        event_bus.listen(fn)
     })
 
     createEffect(() => {
@@ -134,7 +142,14 @@ const List: VoidComponent<ListProps> = (props) => {
     })
 
     return (
-        <div class="w-full" {...bind()} ref={element}>
+        <div
+            class="w-full"
+            {...bind()}
+            ref={element}
+            onMouseEnter={(event) => {
+                console.log("penetrated", props.name)
+            }}
+        >
             <For each={props.items}>{(item) => {
                 const [coords, setCoords] = createSignal({
                     x: 0,
@@ -143,7 +158,7 @@ const List: VoidComponent<ListProps> = (props) => {
 
                 const checked = createMemo(() => selectedIds[item.id])
 
-                const bind = useDrag(({ down, movement: [mx, my], last, target }) => {
+                const bind = useDrag(({ down, movement: [mx, my], last, target, currentTarget }) => {
                     const new_coords = { x: down ? mx : 0, y: down ? my : 0, item_id: item.id };
 
                     if (down) {
@@ -159,6 +174,12 @@ const List: VoidComponent<ListProps> = (props) => {
                         setItemsState("retreating")
 
                     setSelectedCoords(() => new_coords)
+                    console.info("muh", currentTarget)
+                }, {
+                    filterTaps: true,
+                    /* pointer: {
+                        mouse: true,
+                    } */
                 })
 
                 const zIndex = createMemo(() => {

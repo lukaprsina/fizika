@@ -3,7 +3,6 @@ import { createContextProvider } from "@solid-primitives/context";
 import { usePrefersDark } from "@solid-primitives/media";
 import type { ParentComponent } from "solid-js";
 import { createSignal } from "solid-js";
-// import { createUserTheme } from "@solid-primitives/start"
 
 export const AppShellHeader: ParentComponent = (props) => {
     return (
@@ -52,9 +51,9 @@ export const [EditToggleProvider, useEditToggle] = createContextProvider(
     }
 );
 
-export const [theme, setTheme] = createSignal<string | undefined>()/* createUserTheme("user-theme", {
-    defaultValue: "light",
-}); */
+
+export const [theme, setTheme] = createSignal<string | undefined>()
+
 
 const Providers: ParentComponent = (props) => {
     const prefersDark = usePrefersDark();
