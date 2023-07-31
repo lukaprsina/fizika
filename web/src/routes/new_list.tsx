@@ -1,12 +1,13 @@
 // @refresh reload
-import type { ParentComponent } from "solid-js";
 import { For, createEffect, type JSX, type VoidComponent, createSignal, Show, createMemo } from "solid-js";
 import { useDrag, useGesture } from 'solid-gesture'
 import { Checkbox } from "@suid/material";
 import { createSpring, animated } from "solid-spring";
 import { createStore } from "solid-js/store";
+import { createContextProvider } from "@solid-primitives/context";
+import { createEventBus } from "@solid-primitives/event-bus"
 
-const IMMEDIATE = true;
+const IMMEDIATE = false;
 
 const App: VoidComponent = () => {
     return (
@@ -43,11 +44,16 @@ const App: VoidComponent = () => {
     )
 }
 
-const ListGroup: ParentComponent = (props) => {
-    return <>
-        {props.children}
-    </>
-}
+type EventBusType = {
+    mouseNumber: number | undefined;
+    numberOfSelected: number | undefined;
+    itemsState: ListItemState;
+};
+
+const [ListGroup, useListGroup] = createContextProvider(() => {
+    const event_bus = createEventBus<EventBusType>();
+    return { ...event_bus }
+})
 
 type ListItemProps = {
     id: number;
@@ -74,14 +80,36 @@ const List: VoidComponent<ListProps> = (props) => {
     })
 
     const [selectedIds, setSelectedIds] = createStore<boolean[]>([]);
+    const numberOfSelected = createMemo(() => {
+        let count = 0;
+
+        for (const id of selectedIds) {
+            if (id) count++;
+        }
+
+        return count;
+    })
+    const event_bus = useListGroup()
+    if (!event_bus) throw new Error("No event bus");
+
+    createEffect(() => {
+        event_bus.emit({
+            mouseNumber: mouseNumber(),
+            numberOfSelected: mouseNumber(),
+            itemsState: itemsState()
+        })
+    })
+
+    createEffect(() => {
+        const a = (payload: EventBusType) => {
+            console.log(props.name, payload)
+        };
+        event_bus.listen(a)
+    })
 
     createEffect(() => {
         const func = () => Array(props.items.length).fill(false);
         setSelectedIds(func)
-    })
-
-    createEffect(() => {
-        console.log(mouseNumber())
     })
 
     let element: HTMLDivElement | undefined;
@@ -89,17 +117,19 @@ const List: VoidComponent<ListProps> = (props) => {
         onMove: (state) => {
             if (!element) return;
             const bounds = element.getBoundingClientRect()
-            // const left = state.xy[0] - bounds.x;
             const top = state.xy[1] - bounds.y;
             setMouseNumber(Math.floor(top / ITEM_HEIGHT))
-
-            // console.log(props.name, )
         },
         onHover: (state) => {
-            // console.log(state.type)
             if (state.type == "pointerleave")
                 setMouseNumber(undefined)
 
+        },
+        onPointerMove: (state) => {
+            if (!element) return;
+            const bounds = element.getBoundingClientRect()
+            const top = state.event.y - bounds.y;
+            setMouseNumber(Math.floor(top / ITEM_HEIGHT))
         }
     })
 
@@ -180,14 +210,19 @@ const List: VoidComponent<ListProps> = (props) => {
                             const height_diff = row_count * ITEM_HEIGHT
                             new_y += height_diff
                         }
-                    } else if (itemsState() == "dragged") {
+                    } else if (itemsState() == "dragged" && typeof mouseNumber() !== "undefined") {
                         let row_count = 0;
+
                         for (let i = item.id; i >= 0; i--) {
                             if (selectedIds[i])
                                 row_count--;
                         }
 
-                        const height_diff = (row_count + (mouseNumber() ?? 0)) * ITEM_HEIGHT
+                        if (item.id > mouseNumber()!) {
+                            row_count += numberOfSelected();
+                        }
+
+                        const height_diff = row_count * ITEM_HEIGHT
                         new_y += height_diff
                     }
 

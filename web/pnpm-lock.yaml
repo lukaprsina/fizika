@@ -35,6 +35,9 @@ dependencies:
   '@solid-primitives/context':
     specifier: ^0.2.1
     version: 0.2.1(solid-js@1.7.8)
+  '@solid-primitives/event-bus':
+    specifier: ^1.0.7
+    version: 1.0.7(solid-js@1.7.8)
   '@solid-primitives/event-listener':
     specifier: ^2.2.13
     version: 2.2.13(solid-js@1.7.8)
@@ -2229,6 +2232,15 @@ packages:
     peerDependencies:
       solid-js: ^1.6.12
     dependencies:
+      solid-js: 1.7.8
+    dev: false
+
+  /@solid-primitives/event-bus@1.0.7(solid-js@1.7.8):
+    resolution: {integrity: sha512-RMDR4tgOUdiWB7rEFO1XnlnbwOy6MrbrjdYwinDEaEWmXB5aJBFqTuoTw/SDbrckTu1rLe/g0tbCin/vgHWmRw==}
+    peerDependencies:
+      solid-js: ^1.6.12
+    dependencies:
+      '@solid-primitives/utils': 6.2.0(solid-js@1.7.8)
       solid-js: 1.7.8
     dev: false
 

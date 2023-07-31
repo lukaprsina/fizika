@@ -157,6 +157,6 @@ export const Equation: VoidComponent<EquationProps> = (props) => {
     })
 
     return (
-        <span ref={math_element} />
+        <span ref={math_element!} />
     )
 }

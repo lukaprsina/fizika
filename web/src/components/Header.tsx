@@ -2,7 +2,7 @@ import { TextField } from "@suid/material";
 import type { Component, Setter } from "solid-js";
 import { Show } from "solid-js";
 import { A } from "solid-start";
-import { useEditToggle, useThemeToggle } from "~/layouts/Providers";
+import { useEditToggle, setTheme, theme } from "~/layouts/Providers";
 
 type HeaderType = {
     topic?: string;
@@ -14,7 +14,6 @@ type HeaderType = {
 
 const Header: Component<HeaderType> = (props) => {
     const editToggle = useEditToggle();
-    const darkToggle = useThemeToggle();
 
     return (
         <div
@@ -48,8 +47,13 @@ const Header: Component<HeaderType> = (props) => {
                     <label><input
                         type="checkbox"
                         class="mr-2"
-                        checked={darkToggle?.dark()}
-                        onChange={() => darkToggle?.setDark(!darkToggle.dark())}
+                        checked={theme() == "dark"}
+                        onChange={() => {
+                            if (theme() == "dark")
+                                setTheme("dark")
+                            else
+                                setTheme("light")
+                        }}
                     />
                         Temna tema</label>
                 </div>
