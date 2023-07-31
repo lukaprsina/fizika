@@ -6,6 +6,8 @@ import { createSpring, animated } from "solid-spring";
 import { createStore } from "solid-js/store";
 import { createContextProvider } from "@solid-primitives/context";
 import { createEventBus } from "@solid-primitives/event-bus"
+import { UpdateGuard, createElementBounds } from "@solid-primitives/bounds"
+import { throttle } from "@solid-primitives/scheduled";
 
 const IMMEDIATE = false;
 
@@ -52,9 +54,11 @@ yeehaw parner
 */
 
 type EventBusType = {
+    name: string
     mouseNumber: number | undefined;
     numberOfSelected: number | undefined;
-    itemsState: ListItemState;
+    itemsState: ListItemState | undefined;
+    bounds_top: number | undefined;
 };
 
 const [ListGroup, useListGroup] = createContextProvider(() => {
@@ -80,9 +84,12 @@ const ITEM_HEIGHT = 52;
 const List: VoidComponent<ListProps> = (props) => {
     const [itemsState, setItemsState] = createSignal<ListItemState>("stationary");
     const [mouseNumber, setMouseNumber] = createSignal<number | undefined>();
-    const [selectedCoords, setSelectedCoords] = createSignal<{ x: number, y: number, item_id: number | undefined }>({
+    const [selectedCoords, setSelectedCoords] = createSignal<{
+        x: number, y: number, item_id: number | undefined, clientY: number | undefined
+    }>({
         x: 0,
         y: 0,
+        clientY: undefined,
         item_id: undefined
     })
 
@@ -101,16 +108,16 @@ const List: VoidComponent<ListProps> = (props) => {
     if (!event_bus) throw new Error("No event bus");
 
     createEffect(() => {
-        event_bus.emit({
-            mouseNumber: mouseNumber(),
-            numberOfSelected: mouseNumber(),
-            itemsState: itemsState()
-        })
-    })
-
-    createEffect(() => {
         const fn = (payload: EventBusType) => {
-            // console.log(props.name, payload)
+            if (itemsState() == "dragged") {
+                const clientY = selectedCoords().clientY
+                if (typeof clientY !== "number") return;
+
+                if (clientY! > (payload.bounds_top ?? 0)) {
+                    // add lower bound
+                    console.log(payload.name, clientY, payload.bounds_top)
+                }
+            }
         };
         event_bus.listen(fn)
     })
@@ -121,6 +128,23 @@ const List: VoidComponent<ListProps> = (props) => {
     })
 
     let element: HTMLDivElement | undefined;
+    const throttleUpdate: UpdateGuard = (fn) => throttle(fn, 10)
+    const bounds = createElementBounds(() => element, {
+        trackMutation: throttleUpdate,
+        trackScroll: throttleUpdate,
+    })
+
+    createEffect(() => {
+        if (itemsState() == "stationary")
+            event_bus.emit({
+                name: props.name,
+                bounds_top: bounds.top ?? undefined,
+                itemsState: undefined,
+                mouseNumber: undefined,
+                numberOfSelected: undefined
+            })
+    })
+
     const bind = useGesture({
         onMove: (state) => {
             if (!element) return;
@@ -146,9 +170,6 @@ const List: VoidComponent<ListProps> = (props) => {
             class="w-full"
             {...bind()}
             ref={element}
-            onMouseEnter={(event) => {
-                console.log("penetrated", props.name)
-            }}
         >
             <For each={props.items}>{(item) => {
                 const [coords, setCoords] = createSignal({
@@ -158,8 +179,13 @@ const List: VoidComponent<ListProps> = (props) => {
 
                 const checked = createMemo(() => selectedIds[item.id])
 
-                const bind = useDrag(({ down, movement: [mx, my], last, target, currentTarget }) => {
-                    const new_coords = { x: down ? mx : 0, y: down ? my : 0, item_id: item.id };
+                const bind = useDrag(({ down, movement: [mx, my], last, target, event }) => {
+                    const new_coords = {
+                        x: down ? mx : 0,
+                        y: down ? my : 0,
+                        item_id: item.id,
+                        clientY: event.clientY
+                    };
 
                     if (down) {
                         const correct_element = (target as Element).classList.contains("animated-div");
@@ -174,7 +200,6 @@ const List: VoidComponent<ListProps> = (props) => {
                         setItemsState("retreating")
 
                     setSelectedCoords(() => new_coords)
-                    console.info("muh", currentTarget)
                 }, {
                     filterTaps: true,
                     /* pointer: {
