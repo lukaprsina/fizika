@@ -10,14 +10,14 @@ import type { UpdateGuard } from "@solid-primitives/bounds";
 import { createElementBounds } from "@solid-primitives/bounds"
 import { throttle } from "@solid-primitives/scheduled";
 
-const IMMEDIATE = false;
+const IMMEDIATE = true;
 
 const App: VoidComponent = () => {
     return (
         <div class="w-screen h-screen flex justify-center">
             <div class="w-1/2  h-full">
                 <ListGroup>
-                    <For each={"abc".split("")}>{(letter) => {
+                    <For each={"ab".split("")}>{(letter) => {
                         const [items, setItems] = createSignal<ListItemProps[]>([])
 
                         createEffect(() => {
@@ -32,7 +32,7 @@ const App: VoidComponent = () => {
                         })
 
                         return (
-                            <div class="my-5">
+                            <div class="my-16">
                                 <List
                                     items={items()}
                                     selectable
@@ -80,17 +80,23 @@ type ListItemState = "dragged" | "retreating" | "stationary"
 
 const ITEM_HEIGHT = 52;
 
+type SelectedCoordsType = {
+    x: number;
+    y: number;
+    name: string;
+    item_id: number;
+    numberOfSelected: number;
+    mouseX: number;
+    mouseY: number;
+    last: boolean
+};
+
+const [selectedInfo, setSelectedInfo] = createSignal<SelectedCoordsType>()
+
 const List: VoidComponent<ListProps> = (props) => {
     const [itemsState, setItemsState] = createSignal<ListItemState>("stationary");
+    const [offsetNumber, setOffsetNumber] = createSignal<number | undefined>();
     const [mouseNumber, setMouseNumber] = createSignal<number | undefined>();
-    const [selectedCoords, setSelectedCoords] = createSignal<{
-        x: number, y: number, item_id: number | undefined, clientY: number | undefined
-    }>({
-        x: 0,
-        y: 0,
-        clientY: undefined,
-        item_id: undefined
-    })
 
     const [selectedIds, setSelectedIds] = createStore<boolean[]>([]);
     const numberOfSelected = createMemo(() => {
@@ -108,15 +114,14 @@ const List: VoidComponent<ListProps> = (props) => {
 
     createEffect(() => {
         const fn = (payload: InputEventBusType) => {
-            if (itemsState() == "dragged") {
-                const clientY = selectedCoords().clientY
+            if (selectedInfo() && itemsState() == "dragged") {
+                const clientY = selectedInfo()!.mouseY
+
                 if (typeof clientY !== "number" ||
                     typeof payload.bounds_top !== "number" ||
                     typeof payload.bounds_bottom !== "number") return;
-                // do we even need channels?????
 
-                if (clientY! > (payload.bounds_top) && clientY! < (payload.bounds_bottom)) {
-                    console.log(payload.name, clientY)
+                if (clientY > (payload.bounds_top) && clientY < (payload.bounds_bottom)) {
                     event_bus.output_bus.emit({
                         name: payload.name
                     })
@@ -125,6 +130,19 @@ const List: VoidComponent<ListProps> = (props) => {
         };
 
         event_bus.input_bus.listen(fn)
+    })
+
+    createEffect(() => {
+        const fn = (payload: OutputEventBusType) => {
+            if (itemsState() == "stationary" && payload.name == props.name) {
+                const bounds = element!.getBoundingClientRect()
+                const diff = selectedInfo()!.mouseY - bounds.top;
+                const pos = Math.floor(diff / ITEM_HEIGHT);
+                setOffsetNumber(pos)
+            }
+        };
+
+        event_bus.output_bus.listen(fn)
     })
 
     createEffect(() => {
@@ -148,6 +166,15 @@ const List: VoidComponent<ListProps> = (props) => {
             })
     })
 
+    createEffect(() => {
+        if (selectedInfo()) {
+            if (selectedInfo()!.last || selectedInfo()!.mouseY < bounds.top!
+                || selectedInfo()!.mouseY > bounds.bottom!) {
+                setOffsetNumber()
+            }
+        }
+    })
+
     const bind = useGesture({
         onMove: (state) => {
             if (!element) return;
@@ -155,17 +182,6 @@ const List: VoidComponent<ListProps> = (props) => {
             const top = state.xy[1] - bounds.y;
             setMouseNumber(Math.floor(top / ITEM_HEIGHT))
         },
-        onHover: (state) => {
-            if (state.type == "pointerleave")
-                setMouseNumber(undefined)
-
-        },
-        onPointerMove: (state) => {
-            if (!element) return;
-            const bounds = element.getBoundingClientRect()
-            const top = state.event.y - bounds.y;
-            setMouseNumber(Math.floor(top / ITEM_HEIGHT))
-        }
     })
 
     return (
@@ -186,9 +202,12 @@ const List: VoidComponent<ListProps> = (props) => {
                     const new_coords = {
                         x: down ? mx : 0,
                         y: down ? my : 0,
+                        name: props.name,
                         item_id: item.id,
-                        // doesn't exist on MouseEvent, you must use pointers            
-                        clientY: (event as MouseEvent).clientY
+                        numberOfSelected: numberOfSelected(),
+                        mouseX: (event as MouseEvent).clientX,
+                        mouseY: (event as MouseEvent).clientY,
+                        last
                     };
 
                     if (down) {
@@ -203,12 +222,9 @@ const List: VoidComponent<ListProps> = (props) => {
                     else if (last)
                         setItemsState("retreating")
 
-                    setSelectedCoords(() => new_coords)
+                    setSelectedInfo(() => new_coords)
                 }, {
                     filterTaps: true,
-                    /* pointer: {
-                        mouse: true,
-                    } */
                 })
 
                 const zIndex = createMemo(() => {
@@ -235,15 +251,18 @@ const List: VoidComponent<ListProps> = (props) => {
                 })
 
                 createEffect(() => {
-                    const dragged_id = selectedCoords().item_id;
+                    if (typeof selectedInfo() == "undefined") return
+                    const dragged_id = selectedInfo()!.item_id;
                     if (typeof dragged_id !== "number") return
 
-                    let new_y = 0
-                    let new_x = 0
-                    if (checked()) {
-                        new_y = selectedCoords().y
-                        new_x = selectedCoords().x
+                    let new_y = 0;
+                    let new_x = 0;
+
+                    if (checked() && selectedInfo()!.name == props.name) {
+                        new_y = selectedInfo()!.y
+                        new_x = selectedInfo()!.x
                         let row_count = 0;
+
                         if (item.id < dragged_id) {
                             for (let i = dragged_id; i > item.id; i--) {
                                 if (!selectedIds[i])
@@ -256,7 +275,7 @@ const List: VoidComponent<ListProps> = (props) => {
                             }
                         }
 
-                        if (itemsState() == "dragged" && selectedCoords().item_id !== item.id) {
+                        if (itemsState() == "dragged" && selectedInfo()!.item_id !== item.id) {
                             const height_diff = row_count * ITEM_HEIGHT
                             new_y += height_diff
                         }
@@ -274,6 +293,11 @@ const List: VoidComponent<ListProps> = (props) => {
 
                         const height_diff = row_count * ITEM_HEIGHT
                         new_y += height_diff
+                    } else if (itemsState() == "stationary") {
+                        if (typeof offsetNumber() == "number" && item.id >= offsetNumber()!) {
+                            const height_diff = (selectedInfo()!.numberOfSelected) * ITEM_HEIGHT
+                            new_y += height_diff
+                        }
                     }
 
                     setCoords({
