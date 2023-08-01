@@ -6,7 +6,8 @@ import { createSpring, animated } from "solid-spring";
 import { createStore } from "solid-js/store";
 import { createContextProvider } from "@solid-primitives/context";
 import { createEventBus } from "@solid-primitives/event-bus"
-import { UpdateGuard, createElementBounds } from "@solid-primitives/bounds"
+import type { UpdateGuard } from "@solid-primitives/bounds";
+import { createElementBounds } from "@solid-primitives/bounds"
 import { throttle } from "@solid-primitives/scheduled";
 
 const IMMEDIATE = false;
@@ -46,24 +47,22 @@ const App: VoidComponent = () => {
     )
 }
 
-/* TODO:
-scroll not work moving,
-createEffect scroll primitive send to bus
-the dragging one checks&calculates shit and sends instructions back
-yeehaw parner
-*/
+// TODO: fix mobile
 
-type EventBusType = {
-    name: string
-    mouseNumber: number | undefined;
-    numberOfSelected: number | undefined;
-    itemsState: ListItemState | undefined;
+type InputEventBusType = {
+    name: string;
     bounds_top: number | undefined;
+    bounds_bottom: number | undefined;
+};
+
+type OutputEventBusType = {
+    name: string;
 };
 
 const [ListGroup, useListGroup] = createContextProvider(() => {
-    const event_bus = createEventBus<EventBusType>();
-    return { ...event_bus }
+    const input_bus = createEventBus<InputEventBusType>();
+    const output_bus = createEventBus<OutputEventBusType>();
+    return { input_bus, output_bus }
 })
 
 type ListItemProps = {
@@ -108,18 +107,24 @@ const List: VoidComponent<ListProps> = (props) => {
     if (!event_bus) throw new Error("No event bus");
 
     createEffect(() => {
-        const fn = (payload: EventBusType) => {
+        const fn = (payload: InputEventBusType) => {
             if (itemsState() == "dragged") {
                 const clientY = selectedCoords().clientY
-                if (typeof clientY !== "number") return;
+                if (typeof clientY !== "number" ||
+                    typeof payload.bounds_top !== "number" ||
+                    typeof payload.bounds_bottom !== "number") return;
+                // do we even need channels?????
 
-                if (clientY! > (payload.bounds_top ?? 0)) {
-                    // add lower bound
-                    console.log(payload.name, clientY, payload.bounds_top)
+                if (clientY! > (payload.bounds_top) && clientY! < (payload.bounds_bottom)) {
+                    console.log(payload.name, clientY)
+                    event_bus.output_bus.emit({
+                        name: payload.name
+                    })
                 }
             }
         };
-        event_bus.listen(fn)
+
+        event_bus.input_bus.listen(fn)
     })
 
     createEffect(() => {
@@ -136,12 +141,10 @@ const List: VoidComponent<ListProps> = (props) => {
 
     createEffect(() => {
         if (itemsState() == "stationary")
-            event_bus.emit({
+            event_bus.input_bus.emit({
                 name: props.name,
                 bounds_top: bounds.top ?? undefined,
-                itemsState: undefined,
-                mouseNumber: undefined,
-                numberOfSelected: undefined
+                bounds_bottom: bounds.bottom ?? undefined,
             })
     })
 
@@ -184,7 +187,8 @@ const List: VoidComponent<ListProps> = (props) => {
                         x: down ? mx : 0,
                         y: down ? my : 0,
                         item_id: item.id,
-                        clientY: event.clientY
+                        // doesn't exist on MouseEvent, you must use pointers            
+                        clientY: (event as MouseEvent).clientY
                     };
 
                     if (down) {
