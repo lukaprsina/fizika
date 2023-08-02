@@ -32,6 +32,8 @@ const App: VoidComponent = () => {
                                     items={items()}
                                     selectable
                                     name={letter}
+                                    itemWidth={150}
+                                    itemHeight={120}
                                 />
                             </div>
                         )
@@ -58,6 +60,8 @@ type ListProps = {
     items: ListItemProps[];
     selectable?: boolean;
     name: string;
+    itemWidth: number;
+    itemHeight: number;
 }
 
 type ListItemState = "dragged" | "retreating" | "stationary"
@@ -82,7 +86,9 @@ const [ListGroup, useListGroup] = createContextProvider(() => {
 
 const List: VoidComponent<ListProps> = (props) => {
     let element: HTMLDivElement | undefined;
+    const listGroup = useListGroup();
     const [itemsState, setItemsState] = createSignal<ListItemState>("stationary");
+    const [fakeItems, setFakeItems] = createSignal<number>();
     const [selectedIds, setSelectedIds] = createStore<boolean[]>([]);
     const numberOfSelected = createMemo(() => {
         let count = 0;
@@ -109,6 +115,9 @@ const List: VoidComponent<ListProps> = (props) => {
                     itemsState={itemsState()}
                     setItemsState={setItemsState}
                     numberOfSelected={numberOfSelected()}
+                    width={props.itemWidth}
+                    height={props.itemHeight}
+                    setFakeItems={setFakeItems}
                 >
                     {item.component}
                 </ListItem>
@@ -123,12 +132,16 @@ type ListItemType = {
     selectable?: boolean;
     checked?: boolean;
     itemsState: ListItemState;
-    numberOfSelected: number
+    numberOfSelected: number;
+    width: number;
+    height: number;
     setItemsState: Setter<ListItemState>;
     setChecked: (value: boolean) => void;
+    setFakeItems: Setter<number>;
 }
 
 const ListItem: ParentComponent<ListItemType> = (props) => {
+    let element: HTMLDivElement | undefined;
     const [coords, setCoords] = createSignal({
         x: 0,
         y: 0
@@ -139,23 +152,29 @@ const ListItem: ParentComponent<ListItemType> = (props) => {
         let newY = 0;
 
         if (props.checked) {
-            if (state.down) {
+            if (state.last)
+                props.setItemsState("retreating")
+            else if (state.down) {
                 newX = state.movement[0]
                 newY = state.movement[1]
                 props.setItemsState("dragged")
             }
-        }
 
-        setSelectedItemInfo(() => ({
-            x: newX,
-            y: newY,
-            listName: props.listName,
-            itemId: props.id,
-            last: state.last,
-            numberOfSelected: props.numberOfSelected,
-            mouseX: state.event.clientX,
-            mouseY: state.event.clientY,
-        }))
+            const event = state.event as MouseEvent;
+
+            setSelectedItemInfo(() => ({
+                x: newX,
+                y: newY,
+                listName: props.listName,
+                itemId: props.id,
+                last: state.last,
+                numberOfSelected: props.numberOfSelected,
+                mouseX: event.clientX,
+                mouseY: event.clientY,
+            }))
+        }
+    }, {
+        filterTaps: true
     })
 
     const zIndex = createMemo(() => {
@@ -169,15 +188,26 @@ const ListItem: ParentComponent<ListItemType> = (props) => {
             return 1;
     })
 
+    const isListDragged = createMemo(() => {
+        return (
+            selectedItemInfo()?.listName == props.listName &&
+            props.checked &&
+            props.itemsState === "dragged"
+        )
+    })
+
     const style = createSpring(() => {
         return {
             to: {
                 x: coords().x,
                 y: coords().y,
                 zIndex: zIndex(),
-                width: 128,
-                height: 128,
+                width: props.width,
+                height: props.height,
+                order: isListDragged() ? 1 : 0,
             },
+            onRest: () => props.itemsState != "dragged" ? props.setItemsState("stationary") : null,
+            immediate: (key: string) => ["zIndex", "order"].indexOf(key) !== -1
         }
     })
 
@@ -197,11 +227,13 @@ const ListItem: ParentComponent<ListItemType> = (props) => {
         <AnimatedDiv
             style={style()}
             {...bind()}
-            class="animated-div select-none touch-none bg-slate-300 rounded-md m-2 py-2 flex items-center relative"
-            tabIndex={-1} >
+            ref={element}
+            tabIndex={-1}
+            class="animated-div select-none touch-none rounded-md m-2 py-2 flex items-center bg-slate-300 relative"
+        >
             <Show when={props.selectable}>
                 <Checkbox
-                    checked={props.checked}
+                    value={props.checked}
                     onChange={(_, checked) => {
                         props.setChecked(checked)
                     }}
