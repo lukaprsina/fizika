@@ -1,11 +1,17 @@
+import type { UpdateGuard } from "@solid-primitives/bounds";
+import { createElementBounds } from "@solid-primitives/bounds";
 import { createContextProvider } from "@solid-primitives/context";
 import { createEventBus } from "@solid-primitives/event-bus";
+import { throttle } from "@solid-primitives/scheduled";
 import { Checkbox } from "@suid/material";
 import { useDrag } from "solid-gesture";
 import type { JSX, ParentComponent, Setter, VoidComponent } from "solid-js";
 import { For, Show, createEffect, createMemo, createSignal } from "solid-js";
+import type { SetStoreFunction } from "solid-js/store";
 import { createStore } from "solid-js/store";
 import { animated, createSpring } from "solid-spring";
+
+const MARGIN_IN_PIXELS = 8;
 
 const App: VoidComponent = () => {
     return (
@@ -44,15 +50,8 @@ const App: VoidComponent = () => {
     )
 }
 
-type InputEventBusType = {
-    name: string;
-    bounds_top: number | undefined;
-    bounds_bottom: number | undefined;
-};
-
-
 type ListItemProps = {
-    id: number;
+    id: number | undefined;
     component: JSX.Element;
 }
 
@@ -75,21 +74,123 @@ type SelectedItemInfoType = {
     mouseX: number;
     mouseY: number;
     last: boolean;
+    itemState: ListItemState;
 };
 
-const [selectedItemInfo, setSelectedItemInfo] = createSignal<SelectedItemInfoType>()
+const [info, setInfo] = createStore<SelectedItemInfoType>({
+    x: 0,
+    y: 0,
+    listName: "",
+    itemId: 0,
+    numberOfSelected: 0,
+    mouseX: 0,
+    mouseY: 0,
+    last: false,
+    itemState: "stationary",
+})
+
+type MovementEventBusType = {
+    name: string;
+    bounds_top: number | undefined;
+    bounds_bottom: number | undefined;
+};
+
+type NotifyEventBusType = {
+    name: string;
+};
 
 const [ListGroup, useListGroup] = createContextProvider(() => {
-    const input_bus = createEventBus<InputEventBusType>();
-    return { input_bus }
+    const movement_bus = createEventBus<MovementEventBusType>();
+    const notify_bus = createEventBus<NotifyEventBusType>();
+    return { movement_bus, notify_bus };
 })
 
 const List: VoidComponent<ListProps> = (props) => {
     let element: HTMLDivElement | undefined;
-    const listGroup = useListGroup();
-    const [itemsState, setItemsState] = createSignal<ListItemState>("stationary");
-    const [fakeItems, setFakeItems] = createSignal<number>();
+    const bus = useListGroup();
+    if (!bus) throw new Error("No event bus")
+
+    const [itemState, setItemState] = createSignal<ListItemState>("stationary");
     const [selectedIds, setSelectedIds] = createStore<boolean[]>([]);
+    const [items, setItems] = createSignal<ListItemProps[]>([]);
+    const [fakeItems, setFakeItems] = createSignal<ListItemProps[]>([]);
+
+    createEffect(() => {
+        const func = () => Array(props.items.length).fill(false);
+        setSelectedIds(func)
+    })
+
+    createEffect(() => {
+        if (info.itemState == "dragged") {
+            const copied_items = [...props.items];
+            copied_items.splice(2, 0, ...fakeItems())
+            setItems(copied_items);
+            console.log(props.name, copied_items.length)
+        } else
+            setItems(props.items)
+    })
+
+    createEffect(() => {
+        const fn = (payload: MovementEventBusType) => {
+            if (info.itemState == "dragged") {
+                const clientY = info.mouseY
+
+                if (typeof clientY !== "number" ||
+                    typeof payload.bounds_top !== "number" ||
+                    typeof payload.bounds_bottom !== "number") return;
+
+                if (clientY > (payload.bounds_top) && clientY < (payload.bounds_bottom)) {
+                    bus.notify_bus.emit({
+                        name: payload.name
+                    })
+                }
+            }
+        };
+
+        bus.movement_bus.listen(fn)
+    })
+
+    createEffect(() => {
+        const fn = (payload: NotifyEventBusType) => {
+            if (itemState() == "stationary" && payload.name == props.name) {
+                const bounds = element!.getBoundingClientRect();
+
+                const diffX = info.mouseX - bounds.left;
+                const diffY = info.mouseY - bounds.top;
+
+                const posX = Math.floor(diffX / (props.itemWidth + 2 * MARGIN_IN_PIXELS));
+                const posY = Math.floor(diffY / (props.itemHeight + 2 * MARGIN_IN_PIXELS));
+
+
+                const fake_items: ListItemProps[] = Array.from({ length: info.numberOfSelected }, () => ({
+                    id: undefined,
+                    component: <p>Fake</p>
+                }))
+
+                // console.log(props.name, posX, posY, fake_items.length)
+
+                setFakeItems(fake_items)
+            }
+        };
+
+        bus.notify_bus.listen(fn)
+    })
+
+    const throttleUpdate: UpdateGuard = (fn) => throttle(fn, 10)
+    const bounds = createElementBounds(() => element, {
+        trackMutation: throttleUpdate,
+        trackScroll: throttleUpdate,
+    })
+
+    createEffect(() => {
+        if (itemState() == "stationary")
+            bus.movement_bus.emit({
+                name: props.name,
+                bounds_top: bounds.top ?? undefined,
+                bounds_bottom: bounds.bottom ?? undefined,
+            })
+    })
+
     const numberOfSelected = createMemo(() => {
         let count = 0;
 
@@ -102,25 +203,37 @@ const List: VoidComponent<ListProps> = (props) => {
 
     return (
         <div
-            class="w-full flex flex-wrap justify-start"
+            class="w-full flex flex-wrap justify-start box-border"
             ref={element}
         >
-            <For each={props.items}>{(item) => (
-                <ListItem
-                    listName={props.name}
-                    id={item.id}
-                    selectable={props.selectable}
-                    checked={selectedIds[item.id]}
-                    setChecked={(tab) => setSelectedIds([item.id], tab)}
-                    itemsState={itemsState()}
-                    setItemsState={setItemsState}
-                    numberOfSelected={numberOfSelected()}
-                    width={props.itemWidth}
-                    height={props.itemHeight}
-                    setFakeItems={setFakeItems}
+            <For each={items()}>{(item) => (
+                <Show
+                    when={typeof item.id != "undefined"}
+                    fallback={
+                        <div
+                            class="bg-red-200 rounded-md m-2 py-2"
+                            style={{
+                                width: `${props.itemWidth}px`,
+                                height: `${props.itemHeight}px`,
+                            }}
+                        />
+                    }
                 >
-                    {item.component}
-                </ListItem>
+                    <ListItem
+                        listName={props.name}
+                        id={item.id!}
+                        selectable={props.selectable}
+                        checked={selectedIds[item.id!]}
+                        setChecked={setSelectedIds/* (value) => setSelectedIds([item.id!], value) */}
+                        itemsState={itemState()}
+                        setItemsState={setItemState}
+                        numberOfSelected={numberOfSelected()}
+                        width={props.itemWidth}
+                        height={props.itemHeight}
+                    >
+                        {item.component}
+                    </ListItem>
+                </Show>
             )}</For>
         </div>
     )
@@ -130,14 +243,13 @@ type ListItemType = {
     listName: string;
     id: number;
     selectable?: boolean;
-    checked?: boolean;
+    checked: boolean;
     itemsState: ListItemState;
     numberOfSelected: number;
     width: number;
     height: number;
     setItemsState: Setter<ListItemState>;
-    setChecked: (value: boolean) => void;
-    setFakeItems: Setter<number>;
+    setChecked: SetStoreFunction<boolean[]>;
 }
 
 const ListItem: ParentComponent<ListItemType> = (props) => {
@@ -151,10 +263,14 @@ const ListItem: ParentComponent<ListItemType> = (props) => {
         let newX = 0;
         let newY = 0;
 
-        if (props.checked) {
+        if (props.numberOfSelected == 0 || props.checked) {
+
             if (state.last)
                 props.setItemsState("retreating")
             else if (state.down) {
+                const correct_element = (state.target as Element).classList.contains("animated-div");
+                if (!correct_element) return;
+                props.setChecked(props.id, true);
                 newX = state.movement[0]
                 newY = state.movement[1]
                 props.setItemsState("dragged")
@@ -162,11 +278,12 @@ const ListItem: ParentComponent<ListItemType> = (props) => {
 
             const event = state.event as MouseEvent;
 
-            setSelectedItemInfo(() => ({
+            setInfo(() => ({
                 x: newX,
                 y: newY,
                 listName: props.listName,
                 itemId: props.id,
+                itemState: props.itemsState,
                 last: state.last,
                 numberOfSelected: props.numberOfSelected,
                 mouseX: event.clientX,
@@ -190,7 +307,7 @@ const ListItem: ParentComponent<ListItemType> = (props) => {
 
     const isListDragged = createMemo(() => {
         return (
-            selectedItemInfo()?.listName == props.listName &&
+            info.listName == props.listName &&
             props.checked &&
             props.itemsState === "dragged"
         )
@@ -212,7 +329,6 @@ const ListItem: ParentComponent<ListItemType> = (props) => {
     })
 
     createEffect(() => {
-        const info = selectedItemInfo()
         if (!info) return;
 
         if (props.checked && info.listName == props.listName) {
@@ -234,9 +350,7 @@ const ListItem: ParentComponent<ListItemType> = (props) => {
             <Show when={props.selectable}>
                 <Checkbox
                     value={props.checked}
-                    onChange={(_, checked) => {
-                        props.setChecked(checked)
-                    }}
+                    onChange={(_, checked) => props.setChecked(props.id, checked)}
                 />
             </Show>
             {props.children}
